@@ -210,7 +210,7 @@ async def test_read_results_error_cancels_inflight_requests(
             await task3
 
         with pytest.raises(AssertionError, match="TonLib failed with state"):
-            _ = await tonlib_client.get_masterchain_info()
+            await tonlib_client.get_masterchain_info()
 
 
 @pytest.mark.asyncio
