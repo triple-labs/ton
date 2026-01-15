@@ -196,14 +196,14 @@ struct ASTNodeBase {
 #endif
     // In all builds, rely on the discriminant `kind` to ensure correct type.
     tolk_assert(kind == node_kind);
-    // This is a tag-based cast: ASTNodeBase is a non-virtual base, and concrete
-    // nodes are laid out so that reinterpretation is safe when `kind` matches.
-    return reinterpret_cast<V<node_kind>>(this);
+    // Use static_cast from the common non-virtual base to the concrete vertex type.
+    // This remains a tag-based cast, but avoids reinterpret_cast-based UB.
+    return static_cast<V<node_kind>>(this);
   }
 
   template<ASTNodeKind node_kind>
   V<node_kind> try_as() const {
-    return kind == node_kind ? reinterpret_cast<V<node_kind>>(this) : nullptr;
+    return kind == node_kind ? static_cast<V<node_kind>>(this) : nullptr;
   }
 
 #ifdef TOLK_DEBUG
