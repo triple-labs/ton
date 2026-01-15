@@ -194,12 +194,16 @@ struct ASTNodeBase {
       throw Fatal("v->as<...> to wrong node_kind");
     }
 #endif
-    return static_cast<V<node_kind>>(this);
+    // In all builds, rely on the discriminant `kind` to ensure correct type.
+    tolk_assert(kind == node_kind);
+    // This is a tag-based cast: ASTNodeBase is a non-virtual base, and concrete
+    // nodes are laid out so that reinterpretation is safe when `kind` matches.
+    return reinterpret_cast<V<node_kind>>(this);
   }
 
   template<ASTNodeKind node_kind>
   V<node_kind> try_as() const {
-    return kind == node_kind ? static_cast<V<node_kind>>(this) : nullptr;
+    return kind == node_kind ? reinterpret_cast<V<node_kind>>(this) : nullptr;
   }
 
 #ifdef TOLK_DEBUG
