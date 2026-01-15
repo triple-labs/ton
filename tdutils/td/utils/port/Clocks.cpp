@@ -43,17 +43,15 @@ int Clocks::tz_offset() {
   static int offset = [] {
     auto now = std::time(nullptr);
 
-    auto time_ptr = std::localtime(&now);
-    if (time_ptr == nullptr) {
+    std::tm local_time;
+    if (localtime_r(&now, &local_time) == nullptr) {
       return 0;
     }
-    auto local_time = *time_ptr;
 
-    time_ptr = std::gmtime(&now);
-    if (time_ptr == nullptr) {
+    std::tm utc_time;
+    if (gmtime_r(&now, &utc_time) == nullptr) {
       return 0;
     }
-    auto utc_time = *time_ptr;
 
     int minute_offset = local_time.tm_min - utc_time.tm_min;
     int hour_offset = local_time.tm_hour - utc_time.tm_hour;
