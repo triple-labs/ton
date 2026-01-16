@@ -639,7 +639,9 @@ void ArchiveSlice::before_query() {
             CHECK(R2.move_as_ok() == td::KeyValue::GetStatus::Ok);
             unsigned long long shard;
             int scanned = std::sscanf(value.c_str(), "%u.%d:%016llx", &seqno, &shard_prefix.workchain, &shard);
-            CHECK(scanned == 3);
+            if (scanned != 3) {
+              CHECK(false);
+            }
             shard_prefix.shard = shard;
           } else {
             seqno = archive_id_ + slice_size_ * i;
