@@ -640,7 +640,8 @@ void ArchiveSlice::before_query() {
             unsigned long long shard;
             int scanned = std::sscanf(value.c_str(), "%u.%d:%016llx", &seqno, &shard_prefix.workchain, &shard);
             if (scanned != 3) {
-              CHECK(false);
+              // Failed to parse expected fields; abort further processing.
+              return;
             }
             shard_prefix.shard = shard;
           } else {
