@@ -382,10 +382,10 @@ Most exchanges require:
 Many traditional banks restrict cryptocurrency-related transactions. Consider:
 
 **US:**
-- Silvergate (cryptocurrency-focused) - **Note: Check current status**
-- Signature Bank - **Note: Check current status**
 - Customers Bank
 - Cross River Bank
+- First Digital Trust
+- **Note:** Major crypto banks Silvergate and Signature Bank have ceased operations. Always verify current status and licensing of any financial institution.
 
 **EU:**
 - Frick Bank (Liechtenstein)

@@ -69,7 +69,7 @@ This document primarily focuses on production requirements for Full Nodes and Va
 
 ### Storage Growth Considerations
 
-- **Current blockchain size:** ~2-3 TB (as of 2024)
+- **Current blockchain size:** ~2-3 TB (as of early 2026)
 - **Growth rate:** ~100-200 GB per month
 - **Plan for:** 2-3 years of growth = 8-12 TB minimum
 - **Monitoring:** Set alerts when storage reaches 70% capacity
@@ -170,8 +170,10 @@ zlib1g-dev
 libsecp256k1-dev
 libmicrohttpd-dev
 libsodium-dev
-clang-16 (or later)
+clang (16 or later recommended)
 ```
+
+**Note:** For the most current compiler and dependency versions, refer to the main [README.md](../README.md) build instructions.
 
 **Runtime requirements:**
 - All build dependencies
