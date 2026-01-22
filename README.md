@@ -51,6 +51,14 @@ __The Open Network (TON)__ is a fast, secure, scalable blockchain focused on han
 - To work on TON check [wallets](https://ton.app/wallets), [explorers](https://ton.app/explorers), [DEXes](https://ton.app/dex) and [utilities](https://ton.app/utilities)
 - To interact with TON check [APIs](https://docs.ton.org/v3/guidelines/dapps/apis-sdks/overview)
 
+## Production Deployment
+
+For production deployment of validators, full nodes, or DApps:
+- **[Production Guide Index](doc/PRODUCTION-GUIDE-INDEX.md)** - Start here for production deployment
+- **[Production Risk Assessment](doc/PRODUCTION-RISKS.md)** - Understand risks before deploying
+- **[Production Requirements](doc/PRODUCTION-REQUIREMENTS.md)** - Hardware, software, and operational requirements
+- **[Cash-Out Guide](doc/CASHOUT-GUIDE.md)** - Converting TON to fiat currency
+
 ## Updates flow
 
 * **master branch** - mainnet is running on this stable branch.
