@@ -631,7 +631,7 @@ void ArchiveSlice::before_query() {
           if (R2.move_as_ok() == td::KeyValue::GetStatus::Ok) {
             ver = td::to_integer<td::uint32>(value);
           }
-          td::uint32 seqno;
+          td::uint32 seqno = 0;
           ShardIdFull shard_prefix;
           if (shard_separated_) {
             R2 = kv_->get(PSTRING() << "info." << i, value);
