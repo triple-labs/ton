@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
   for (td::uint32 start = att; att < start + 5; att++) {
     LOG(WARNING) << "Test #" << att;
     root_nodes.resize(total_nodes);
-    slave_nodes.resize(total_nodes * node_slaves_cnt);
+    slave_nodes.resize(static_cast<std::size_t>(total_nodes) * node_slaves_cnt);
 
     auto overlay_id_full =
         ton::create_serialize_tl_object<ton::ton_api::pub_overlay>(td::BufferSlice(PSTRING() << "TEST" << att));
