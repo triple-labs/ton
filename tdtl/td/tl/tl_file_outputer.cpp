@@ -20,6 +20,12 @@
 
 #include "tl_file_outputer.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 namespace td {
 namespace tl {
 
@@ -40,7 +46,19 @@ void tl_file_outputer::close() {
 bool tl_file_outputer::open(const std::string &file_name) {
   close();
 
+#if defined(__unix__) || defined(__APPLE__)
+  int fd = ::open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  if (fd < 0) {
+    f = NULL;
+  } else {
+    f = ::fdopen(fd, "w");
+    if (f == NULL) {
+      ::close(fd);
+    }
+  }
+#else
   f = std::fopen(file_name.c_str(), "w");
+#endif
 
   return (f != NULL);
 }
