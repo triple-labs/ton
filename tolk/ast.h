@@ -196,17 +196,15 @@ struct ASTNodeBase {
 #endif
     // In all builds, rely on the discriminant `kind` to ensure correct type.
     tolk_assert(kind == node_kind);
-    // After validating `kind`, reinterpret this node as the requested vertex type.
-    // We avoid a base-to-derived static_cast on a non-polymorphic base to prevent
-    // relying on undefined behavior if invariants are accidentally broken.
-    return reinterpret_cast<V<node_kind>>(this);
+    // After validating `kind`, safely cast this node to the requested vertex type.
+    return static_cast<V<node_kind>>(this);
   }
 
   template<ASTNodeKind node_kind>
   V<node_kind> try_as() const {
     if (kind == node_kind) {
-      // Same reasoning as in `as<>()`: only reinterpret after checking `kind`.
-      return reinterpret_cast<V<node_kind>>(this);
+      // Same reasoning as in `as<>()`: only cast after checking `kind`.
+      return static_cast<V<node_kind>>(this);
     }
     return nullptr;
   }
