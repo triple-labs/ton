@@ -84,7 +84,8 @@ MultisigWallet::QueryState MultisigWallet::get_query_state(td::uint64 query_id) 
     res.state = QueryState::Unknown;
   } else if (state == 0) {
     res.state = QueryState::NotReady;
-    for (size_t i = 0; i < res.mask.size(); i++) {
+    const size_t mask_size = res.mask.size();
+    for (size_t i = 0; i < mask_size; i++) {
       if (mask->get_bit(static_cast<int>(i))) {
         res.mask.set(i);
       }
