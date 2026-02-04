@@ -41,15 +41,11 @@ class PackageStatistics {
   }
 
   void record_read(double time, uint64_t bytes) {
-    read_bytes.fetch_add(bytes, std::memory_order_relaxed);
-    std::lock_guard guard(read_mutex);
-    read_time.insert(time);
+    record_io_operation(time, bytes, read_bytes, read_time, read_mutex);
   }
 
   void record_write(double time, uint64_t bytes) {
-    write_bytes.fetch_add(bytes, std::memory_order_relaxed);
-    std::lock_guard guard(write_mutex);
-    write_time.insert(time);
+    record_io_operation(time, bytes, write_bytes, write_time, write_mutex);
   }
 
   std::string to_string_and_reset() {
@@ -63,26 +59,27 @@ class PackageStatistics {
     ss << "ton.pack.read.bytes COUNT : " << read_bytes.exchange(0, std::memory_order_relaxed) << "\n";
     ss << "ton.pack.write.bytes COUNT : " << write_bytes.exchange(0, std::memory_order_relaxed) << "\n";
 
-    PercentileStats temp_read_time;
-    {
-      std::lock_guard guard(read_mutex);
-      temp_read_time = std::move(read_time);
-      read_time.clear();
-    }
-    ss << "ton.pack.read.micros " << temp_read_time.to_string() << "\n";
-
-    PercentileStats temp_write_time;
-    {
-      std::lock_guard guard(write_mutex);
-      temp_write_time = std::move(write_time);
-      write_time.clear();
-    }
-    ss << "ton.pack.write.micros " << temp_write_time.to_string() << "\n";
+    ss << "ton.pack.read.micros " << get_and_reset_time_stats(read_time, read_mutex).to_string() << "\n";
+    ss << "ton.pack.write.micros " << get_and_reset_time_stats(write_time, write_mutex).to_string() << "\n";
 
     return ss.str();
   }
 
  private:
+  PercentileStats get_and_reset_time_stats(PercentileStats& time_stats, std::mutex& mutex) {
+    std::lock_guard guard(mutex);
+    PercentileStats temp = std::move(time_stats);
+    time_stats.clear();
+    return temp;
+  }
+
+  void record_io_operation(double time, uint64_t bytes, std::atomic_uint64_t& byte_counter,
+                           PercentileStats& time_stats, std::mutex& mutex) {
+    byte_counter.fetch_add(bytes, std::memory_order_relaxed);
+    std::lock_guard guard(mutex);
+    time_stats.insert(time);
+  }
+
   std::atomic_uint64_t open_count{0};
   std::atomic_uint64_t close_count{0};
   PercentileStats read_time;

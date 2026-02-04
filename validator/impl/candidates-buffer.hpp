@@ -57,6 +57,23 @@ class CandidatesBuffer : public td::actor::Actor {
   void get_block_state_cont2(td::Ref<BlockData> block, std::vector<BlockIdExt> prev,
                              std::vector<td::Ref<ShardState>> prev_states);
 
+  // Template helper to eliminate code duplication in finish_get_block_data and finish_get_block_state.
+  // This function handles the common pattern of:
+  // 1. Finding the candidate in the map
+  // 2. Notifying all waiting promises with the result
+  // 3. Clearing the waiters list and resetting the request flag
+  // 4. Storing the result if successful and logging the outcome
+  //
+  // Parameters use pointers-to-members to access the appropriate fields in the Candidate struct:
+  // - resource_ptr: pointer to the data member (e.g., &Candidate::data_ or &Candidate::state_)
+  // - waiters_ptr: pointer to the waiters vector (e.g., &Candidate::data_waiters_)
+  // - requested_ptr: pointer to the request flag (e.g., &Candidate::data_requested_)
+  template <typename T>
+  void finish_get_resource(BlockIdExt id, td::Result<td::Ref<T>> res, const char* resource_name,
+                           td::Ref<T> Candidate::*resource_ptr,
+                           std::vector<td::Promise<td::Ref<T>>> Candidate::*waiters_ptr,
+                           bool Candidate::*requested_ptr);
+
   void finish_get_block_data(BlockIdExt id, td::Result<td::Ref<BlockData>> res);
   void finish_get_block_state(BlockIdExt id, td::Result<td::Ref<ShardState>> res);
 };

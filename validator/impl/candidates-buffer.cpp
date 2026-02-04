@@ -172,42 +172,37 @@ void CandidatesBuffer::get_block_state_cont2(td::Ref<BlockData> block, std::vect
   finish_get_block_state(id, std::move(state));
 }
 
-void CandidatesBuffer::finish_get_block_data(BlockIdExt id, td::Result<td::Ref<BlockData>> res) {
+template <typename T>
+void CandidatesBuffer::finish_get_resource(BlockIdExt id, td::Result<td::Ref<T>> res, const char* resource_name,
+                                           td::Ref<T> Candidate::*resource_ptr,
+                                           std::vector<td::Promise<td::Ref<T>>> Candidate::*waiters_ptr,
+                                           bool Candidate::*requested_ptr) {
   auto it = candidates_.find(id);
   if (it == candidates_.end()) {
     return;
   }
   Candidate &entry = it->second;
-  for (auto &p : entry.data_waiters_) {
+  for (auto &p : entry.*waiters_ptr) {
     p.set_result(res.clone());
   }
-  entry.data_waiters_.clear();
-  entry.data_requested_ = false;
+  (entry.*waiters_ptr).clear();
+  entry.*requested_ptr = false;
   if (res.is_ok()) {
-    entry.data_ = res.move_as_ok();
-    LOG(DEBUG) << "Loaded block data for " << id.to_str();
+    entry.*resource_ptr = res.move_as_ok();
+    LOG(DEBUG) << "Loaded " << resource_name << " for " << id.to_str();
   } else {
-    LOG(DEBUG) << "Failed to load block data for " << id.to_str() << ": " << res.move_as_error();
+    LOG(DEBUG) << "Failed to load " << resource_name << " for " << id.to_str() << ": " << res.move_as_error();
   }
 }
 
+void CandidatesBuffer::finish_get_block_data(BlockIdExt id, td::Result<td::Ref<BlockData>> res) {
+  finish_get_resource(id, std::move(res), "block data", &Candidate::data_, &Candidate::data_waiters_,
+                      &Candidate::data_requested_);
+}
+
 void CandidatesBuffer::finish_get_block_state(BlockIdExt id, td::Result<td::Ref<ShardState>> res) {
-  auto it = candidates_.find(id);
-  if (it == candidates_.end()) {
-    return;
-  }
-  Candidate &entry = it->second;
-  for (auto &p : entry.state_waiters_) {
-    p.set_result(res.clone());
-  }
-  entry.state_waiters_.clear();
-  entry.state_requested_ = false;
-  if (res.is_ok()) {
-    entry.state_ = res.move_as_ok();
-    LOG(DEBUG) << "Loaded block state for " << id.to_str();
-  } else {
-    LOG(DEBUG) << "Failed to load block state for " << id.to_str() << ": " << res.move_as_error();
-  }
+  finish_get_resource(id, std::move(res), "block state", &Candidate::state_, &Candidate::state_waiters_,
+                      &Candidate::state_requested_);
 }
 
 }  // namespace ton::validator
