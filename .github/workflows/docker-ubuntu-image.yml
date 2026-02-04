@@ -1,5 +1,8 @@
 name: Docker Ubuntu 22.04 image
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   push:
