@@ -400,7 +400,8 @@ td::Status LargeBocSerializer::serialize(td::FileFd& fd, int mode) {
   info.absent_count = 0;
   int crc_size = info.has_crc32c ? 4 : 0;
   info.roots_offset = 4 + 1 + 1 + 3 * info.ref_byte_size + info.offset_byte_size;
-  info.index_offset = info.roots_offset + info.root_count * info.ref_byte_size;
+  info.index_offset = info.roots_offset +
+                     static_cast<unsigned long long>(info.root_count) * info.ref_byte_size;
   info.data_offset = info.index_offset;
   if (info.has_index) {
     info.data_offset += (long long)cell_count * info.offset_byte_size;
