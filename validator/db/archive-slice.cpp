@@ -41,15 +41,11 @@ class PackageStatistics {
   }
 
   void record_read(double time, uint64_t bytes) {
-    read_bytes.fetch_add(bytes, std::memory_order_relaxed);
-    std::lock_guard guard(read_mutex);
-    read_time.insert(time);
+    record_io_operation(time, bytes, read_bytes, read_time, read_mutex);
   }
 
   void record_write(double time, uint64_t bytes) {
-    write_bytes.fetch_add(bytes, std::memory_order_relaxed);
-    std::lock_guard guard(write_mutex);
-    write_time.insert(time);
+    record_io_operation(time, bytes, write_bytes, write_time, write_mutex);
   }
 
   std::string to_string_and_reset() {
@@ -83,6 +79,13 @@ class PackageStatistics {
   }
 
  private:
+  void record_io_operation(double time, uint64_t bytes, std::atomic_uint64_t& byte_counter,
+                           PercentileStats& time_stats, std::mutex& mutex) {
+    byte_counter.fetch_add(bytes, std::memory_order_relaxed);
+    std::lock_guard guard(mutex);
+    time_stats.insert(time);
+  }
+
   std::atomic_uint64_t open_count{0};
   std::atomic_uint64_t close_count{0};
   PercentileStats read_time;

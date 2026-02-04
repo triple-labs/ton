@@ -57,6 +57,12 @@ class CandidatesBuffer : public td::actor::Actor {
   void get_block_state_cont2(td::Ref<BlockData> block, std::vector<BlockIdExt> prev,
                              std::vector<td::Ref<ShardState>> prev_states);
 
+  template <typename T>
+  void finish_get_resource(BlockIdExt id, td::Result<td::Ref<T>> res, const char* resource_name,
+                           td::Ref<T> Candidate::*resource_ptr,
+                           std::vector<td::Promise<td::Ref<T>>> Candidate::*waiters_ptr,
+                           bool Candidate::*requested_ptr);
+
   void finish_get_block_data(BlockIdExt id, td::Result<td::Ref<BlockData>> res);
   void finish_get_block_state(BlockIdExt id, td::Result<td::Ref<ShardState>> res);
 };
