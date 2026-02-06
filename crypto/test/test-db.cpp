@@ -2620,7 +2620,7 @@ class BenchBocDeserializer : public td::Benchmark {
           if (thread_i == 0) {
             root = load_root();
           }
-          stage.wait(config_.threads_n * (2 * round_i + 1));
+          stage.wait(static_cast<std::uint64_t>(config_.threads_n) * (2 * round_i + 1));
 
           vm::CompactArray array(array_size, root);
           td::Random::Xorshift128plus rnd{seed};
