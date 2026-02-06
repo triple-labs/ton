@@ -186,6 +186,7 @@ struct ASTNodeBase {
 #endif    
   }
   ASTNodeBase(const ASTNodeBase&) = delete;
+  virtual ~ASTNodeBase() = default;
 
   template<ASTNodeKind node_kind>
   V<node_kind> as() const {
@@ -197,14 +198,14 @@ struct ASTNodeBase {
     // In all builds, rely on the discriminant `kind` to ensure correct type.
     tolk_assert(kind == node_kind);
     // After validating `kind`, safely cast this node to the requested vertex type.
-    return static_cast<V<node_kind>>(this);
+    return dynamic_cast<V<node_kind>>(this);
   }
 
   template<ASTNodeKind node_kind>
   V<node_kind> try_as() const {
     if (kind == node_kind) {
       // Same reasoning as in `as<>()`: only cast after checking `kind`.
-      return static_cast<V<node_kind>>(this);
+      return dynamic_cast<V<node_kind>>(this);
     }
     return nullptr;
   }
