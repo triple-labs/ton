@@ -212,7 +212,8 @@ void Stack::enforce_state(const StackLayout& req_stack) {
 
 void Stack::merge_const(const Stack& req_stack) {
   func_assert(s.size() == req_stack.s.size());
-  for (std::size_t i = 0; i < s.size(); i++) {
+  const std::size_t size = s.size();
+  for (std::size_t i = 0; i < size; i++) {
     func_assert(s[i].first == req_stack.s[i].first);
     if (s[i].second != req_stack.s[i].second) {
       s[i].second = not_const;
@@ -372,20 +373,22 @@ bool Op::generate_code_step(Stack& stack) {
     case _Let: {
       func_assert(left.size() == right.size());
       int i = 0;
+      const std::size_t vec_size = left.size();
       std::vector<bool> active;
-      active.reserve(left.size());
-      for (std::size_t k = 0; k < left.size(); k++) {
+      active.reserve(vec_size);
+      for (std::size_t k = 0; k < vec_size; k++) {
         var_idx_t y = left[k];  // "y" = "x"
         auto p = next->var_info[y];
         active.push_back(p && !p->is_unused());
       }
-      for (std::size_t k = 0; k < left.size(); k++) {
+      const std::size_t right_size = right.size();
+      for (std::size_t k = 0; k < vec_size; k++) {
         if (!active[k]) {
           continue;
         }
         var_idx_t x = right[k];  // "y" = "x"
         bool is_last = true;
-        for (std::size_t l = k + 1; l < right.size(); l++) {
+        for (std::size_t l = k + 1; l < right_size; l++) {
           if (right[l] == x && active[l]) {
             is_last = false;
           }
@@ -401,7 +404,7 @@ bool Op::generate_code_step(Stack& stack) {
         }
       }
       i = 0;
-      for (std::size_t k = 0; k < left.size(); k++) {
+      for (std::size_t k = 0; k < vec_size; k++) {
         if (active[k]) {
           stack.assign_var(left[k], --i);
         }

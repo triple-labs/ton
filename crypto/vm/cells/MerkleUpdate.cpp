@@ -125,7 +125,7 @@ class MerkleUpdateValidator {
     CellSlice cs(NoVm(), cell);
     if (cs.special_type() == Cell::SpecialType::PrunnedBranch) {
       if ((int)cell->get_level() == merkle_depth + 1) {
-        if (known_cells_.count(cell->get_hash(merkle_depth)) == 0) {
+        if (known_cells_.find(cell->get_hash(merkle_depth)) == known_cells_.end()) {
           return td::Status::Error(PSLICE()
                                    << "Unknown prunned cell (validate): " << cell->get_hash(merkle_depth).to_hex());
         }
