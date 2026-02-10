@@ -40,7 +40,7 @@ custom_properties:
       - codeql-scanning
       - dependency-scanning
       - fuzz-testing
-    default_value: 
+    default_value:
       - code-review-required
       - codeql-scanning
     required: false

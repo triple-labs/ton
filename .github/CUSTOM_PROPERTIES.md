@@ -83,7 +83,9 @@ The following custom properties are configured for this repository:
 
 ### Setting Properties via GitHub REST API
 
-You can use the GitHub REST API to programmatically set custom properties:
+You can use the GitHub REST API to programmatically set custom properties.
+
+**Note**: Replace `ORG_NAME` with your organization name and `YOUR_TOKEN` with a valid GitHub personal access token with appropriate permissions.
 
 ```bash
 # Set custom properties for a repository
