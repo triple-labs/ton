@@ -73,6 +73,17 @@ Usually, the response to your pull request will indicate which section it falls 
 
 This repository uses GitHub Organization Custom Properties for metadata management and governance. For more information about the custom properties configured for this repository, see [.github/CUSTOM_PROPERTIES.md](.github/CUSTOM_PROPERTIES.md).
 
+## Security
+
+This repository has identified **137 security issues** that are being actively addressed. We take security seriously and have implemented comprehensive tracking and remediation processes:
+
+- **Security Policy**: See [SECURITY.md](SECURITY.md) for reporting vulnerabilities
+- **Security Tracking**: See [.github/SECURITY_TRACKING.md](.github/SECURITY_TRACKING.md) for issue tracking
+- **Quick Reference**: See [.github/QUICK_REFERENCE.md](.github/QUICK_REFERENCE.md) for remediation guide
+- **Security Dashboard**: https://github.com/triple-labs/ton/security
+
+Automated security scanning is configured with CodeQL and Dependabot. Security updates are prioritized and applied to the master branch.
+
 ## Build TON blockchain
 
 ### Ubuntu 20.4, 22.04, 24.04 (x86-64, aarch64)
