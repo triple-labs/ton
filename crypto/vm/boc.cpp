@@ -69,7 +69,8 @@ td::Status CellSerializationInfo::init(td::uint8 d1, td::uint8 d2, int ref_byte_
   data_len = (d2 >> 1) + (d2 & 1);
   data_with_bits = (d2 & 1) != 0;
   refs_offset = data_offset + data_len;
-  end_offset = refs_offset + refs_cnt * ref_byte_size;
+  end_offset = refs_offset +
+               static_cast<int>(static_cast<std::size_t>(refs_cnt) * static_cast<std::size_t>(ref_byte_size));
 
   return td::Status::OK();
 }
