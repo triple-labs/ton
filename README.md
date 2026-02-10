@@ -69,6 +69,10 @@ Usually, the response to your pull request will indicate which section it falls 
 * Thou shall not merge your own PRs, at least one person should review the PR and merge it (4-eyes rule)
 * Thou shall make sure that workflows are cleanly completed for your PR before considering merge
 
+## Repository Governance
+
+This repository uses GitHub Organization Custom Properties for metadata management and governance. For more information about the custom properties configured for this repository, see [.github/CUSTOM_PROPERTIES.md](.github/CUSTOM_PROPERTIES.md).
+
 ## Build TON blockchain
 
 ### Ubuntu 20.4, 22.04, 24.04 (x86-64, aarch64)
