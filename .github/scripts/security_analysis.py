@@ -10,7 +10,6 @@ It provides utilities for:
 """
 
 import json
-import os
 import sys
 from collections import defaultdict
 from datetime import datetime
