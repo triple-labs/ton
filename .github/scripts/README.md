@@ -20,7 +20,7 @@ The TON repository uses multiple security scanning tools to identify and track v
 python3 .github/scripts/security_analysis.py
 
 # Or from repository root
-./github/scripts/security_analysis.py
+python3 .github/scripts/security_analysis.py
 ```
 
 ### Access Security Alerts
