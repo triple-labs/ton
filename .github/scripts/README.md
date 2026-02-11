@@ -32,7 +32,7 @@ python3 .github/scripts/security_analysis.py
 
 ### Review Security Tracking
 
-See [SECURITY_TRACKING.md](SECURITY_TRACKING.md) for:
+See [SECURITY_TRACKING.md](../SECURITY_TRACKING.md) for:
 - Detailed issue categorization
 - Priority matrix
 - Remediation guidelines
