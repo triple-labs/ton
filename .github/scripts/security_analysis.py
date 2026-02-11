@@ -51,8 +51,9 @@ class SecurityAnalyzer:
 
     def analyze_dependencies(self):
         """
-        Analyze dependencies for known vulnerabilities.
-        Checks Python dependencies in pyproject.toml and uv.lock.
+        Inventory dependency and lock files in the repository.
+        This identifies manifests (e.g., pyproject.toml, uv.lock, requirements.txt)
+        that can be scanned for vulnerabilities by external tools.
         """
         # Check Python dependencies
         pyproject = self.repo_path / "pyproject.toml"
