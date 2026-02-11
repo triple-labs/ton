@@ -17,16 +17,19 @@ Security issues are categorized by:
 
 ### Summary Statistics
 - **Total Issues**: 137
-- **Critical**: TBD
-- **High**: TBD
-- **Medium**: TBD
-- **Low**: TBD
+
+_Note: The breakdowns below must be updated after each security scan. Use the latest data from the repository’s Security tab (Code scanning alerts, Dependabot, secret scanning, configuration checks). Do not treat placeholder text as authoritative._
+
+- **Critical**: _update with current count after latest scan_
+- **High**: _update with current count after latest scan_
+- **Medium**: _update with current count after latest scan_
+- **Low**: _update with current count after latest scan_
 
 ### By Type
-- **CodeQL Alerts**: TBD
-- **Dependency Vulnerabilities**: TBD
-- **Secret Scanning**: TBD
-- **Configuration Issues**: TBD
+- **CodeQL Alerts**: _update with current count after latest scan_
+- **Dependency Vulnerabilities**: _update with current count after latest scan_
+- **Secret Scanning**: _update with current count after latest scan_
+- **Configuration Issues**: _update with current count after latest scan_
 
 ## Priority Matrix
 
