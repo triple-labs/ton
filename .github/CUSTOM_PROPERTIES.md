@@ -186,7 +186,7 @@ jobs:
 ## Best Practices
 
 1. **Keep properties minimal**: Only define properties that provide clear value
-2. **Use consistent naming**: Follow kebab-case convention for property names
+2. **Use consistent naming**: Follow snake_case convention for property names
 3. **Document thoroughly**: Ensure all properties have clear descriptions
 4. **Review regularly**: Audit custom properties quarterly to ensure they remain relevant
 5. **Enforce required properties**: Use required fields for critical metadata
