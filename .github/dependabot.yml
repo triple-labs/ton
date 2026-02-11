@@ -38,7 +38,7 @@ updates:
 
   # Java/Maven dependencies (for Android examples)
   - package-ecosystem: "gradle"
-    directory: "/example/android"
+    directory: "/example/android/test"
     schedule:
       interval: "weekly"
       day: "tuesday"
