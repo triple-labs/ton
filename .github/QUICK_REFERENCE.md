@@ -321,6 +321,6 @@ Remember: Security is a journey, not a destination. Keep improving!
 For detailed information, see:
 - [SECURITY.md](../SECURITY.md) - Security policy
 - [SECURITY_TRACKING.md](SECURITY_TRACKING.md) - Detailed tracking
-- [scripts/README.md](README.md) - Tools and workflows
+- [scripts/README.md](scripts/README.md) - Tools and workflows
 
 **Last Updated**: February 10, 2026
