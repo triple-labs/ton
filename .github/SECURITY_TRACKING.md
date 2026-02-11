@@ -200,9 +200,9 @@ Accepted risks must:
    - Configuration: `.github/workflows/codeql.yml`
 
 2. **Dependabot** (If enabled)
-   - Checks: NPM, PyPI, Maven, Go modules
-   - Frequency: Daily
-   - Configuration: `.github/dependabot.yml` (if exists)
+   - Checks: As configured in `.github/dependabot.yml`
+   - Frequency: As configured in `.github/dependabot.yml`
+   - Configuration: `.github/dependabot.yml` (if present)
 
 3. **Manual Tools**
    ```bash
