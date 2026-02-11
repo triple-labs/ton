@@ -53,16 +53,7 @@ If you discover a security vulnerability in the TON blockchain node software, pl
 
 ### Please DO
 
-1. **Email the security team** (preferred method):
-   - Send details to: [security contact - TBD]
-   - Include:
-     - Description of the vulnerability
-     - Steps to reproduce
-     - Potential impact assessment
-     - Suggested fix (if known)
-     - Your contact information
-
-2. **Use GitHub Security Advisories**:
+1. **Use GitHub Security Advisories** (preferred method):
    - Navigate to: https://github.com/triple-labs/ton/security/advisories
    - Click "New draft security advisory"
    - Fill in the details
