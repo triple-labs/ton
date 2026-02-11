@@ -1,0 +1,64 @@
+name: Update uv.lock on Dependabot PRs
+
+# This workflow helps keep uv.lock in sync when Dependabot updates pyproject.toml
+# Since Dependabot's pip ecosystem doesn't update uv.lock automatically, this
+# workflow regenerates the lockfile after Dependabot creates or updates a PR.
+
+on:
+  pull_request:
+    paths:
+      - 'pyproject.toml'
+    branches:
+      - 'dependabot/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-uv-lock:
+    # Only run on Dependabot PRs
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Regenerate uv.lock
+        run: |
+          uv lock --upgrade
+      
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code uv.lock || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit updated uv.lock
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add uv.lock
+          git commit -m "chore: update uv.lock after Dependabot changes"
+          git push
+      
+      - name: Comment on PR
+        if: steps.git-check.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ `uv.lock` has been automatically updated to match the changes in `pyproject.toml`.'
+            })

@@ -5,6 +5,13 @@
 version: 2
 updates:
   # Python dependencies
+  # Note: This repository uses uv for Python dependency management (uv.lock).
+  # Dependabot's pip ecosystem will propose updates to pyproject.toml but won't 
+  # update uv.lock automatically. After merging Dependabot PRs, manually run:
+  #   uv lock --upgrade-package <package-name>
+  # Or regenerate the entire lockfile with:
+  #   uv lock --upgrade
+  # Consider using a GitHub Action to automate uv.lock updates on Dependabot PRs.
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
