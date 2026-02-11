@@ -68,7 +68,7 @@ If you discover a security vulnerability in the TON blockchain node software, pl
 
 ### Bounty Program
 
-[TBD: Information about security bounty program if available]
+Information about security bounty programs will be announced when available. Check the repository for updates.
 
 ## Security Best Practices
 
@@ -97,7 +97,7 @@ For users and node operators:
 
 ## Contact
 
-- **Security Issues**: [TBD: security email]
+- **Security Issues**: Use GitHub Security Advisories (see reporting section above)
 - **General Questions**: Open a GitHub discussion
 - **Community**: TON Community channels
 
