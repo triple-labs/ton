@@ -16,11 +16,12 @@ The TON repository uses multiple security scanning tools to identify and track v
 ### Check Security Status
 
 ```bash
-# Run the security analysis tool
+# From repository root
 python3 .github/scripts/security_analysis.py
 
-# Or from repository root
-python3 .github/scripts/security_analysis.py
+# Or from within the scripts directory
+cd .github/scripts
+python3 security_analysis.py
 ```
 
 ### Access Security Alerts
