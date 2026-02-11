@@ -52,13 +52,19 @@ class SecurityAnalyzer:
     def analyze_dependencies(self):
         """
         Analyze dependencies for known vulnerabilities.
-        Checks Python dependencies in pyproject.toml/uv.lock.
+        Checks Python dependencies in pyproject.toml and uv.lock.
         """
         # Check Python dependencies
         pyproject = self.repo_path / "pyproject.toml"
         if pyproject.exists():
             print(f"Found Python project: {pyproject}")
             print("Note: Run 'pip-audit' or 'safety check' to scan for vulnerabilities")
+            self.stats['dependency_files'] += 1
+        
+        # Check for uv.lock
+        uv_lock = self.repo_path / "uv.lock"
+        if uv_lock.exists():
+            print(f"Found uv lock file: {uv_lock}")
             self.stats['dependency_files'] += 1
 
         # Check for other dependency files

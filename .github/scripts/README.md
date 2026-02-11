@@ -46,7 +46,7 @@ Python script for analyzing security issues and generating reports.
 
 **Usage:**
 ```bash
-cd /home/runner/work/ton/ton
+cd <repository-root>
 python3 .github/scripts/security_analysis.py
 ```
 
@@ -239,8 +239,8 @@ If CodeQL build fails:
 
 ### Documentation
 
-- [SECURITY.md](../SECURITY.md) - Security policy and reporting
-- [SECURITY_TRACKING.md](SECURITY_TRACKING.md) - Issue tracking and guidelines
+- [SECURITY.md](../../SECURITY.md) - Security policy and reporting
+- [SECURITY_TRACKING.md](../SECURITY_TRACKING.md) - Issue tracking and guidelines
 - [GitHub Security Docs](https://docs.github.com/en/code-security)
 
 ### Tools
