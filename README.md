@@ -71,7 +71,7 @@ Usually, the response to your pull request will indicate which section it falls 
 
 ## Repository Governance
 
-This repository uses GitHub Organization Custom Properties for metadata management and governance. For more information about the custom properties configured for this repository, see [.github/CUSTOM_PROPERTIES.md](.github/CUSTOM_PROPERTIES.md).
+This repository documents the recommended GitHub Organization Custom Properties for metadata management and governance. These act as config-as-code guidelines and must be applied in your organization settings (or via automation such as safe-settings/API); GitHub does not automatically apply custom properties from this repository. For more information about the recommended custom properties for this repository, see [.github/CUSTOM_PROPERTIES.md](.github/CUSTOM_PROPERTIES.md).
 
 ## Security
 
