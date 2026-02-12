@@ -18,18 +18,25 @@ Security issues are categorized by:
 ### Summary Statistics
 - **Total Issues**: 137
 
-_Note: The breakdowns below must be updated after each security scan. Use the latest data from the repository’s Security tab (Code scanning alerts, Dependabot, secret scanning, configuration checks). Do not treat placeholder text as authoritative._
+### Severity Breakdown
 
-- **Critical**: _update with current count after latest scan_
-- **High**: _update with current count after latest scan_
-- **Medium**: _update with current count after latest scan_
-- **Low**: _update with current count after latest scan_
+_Note: These breakdowns must be updated after each security scan. Access the repository's Security tab to get current counts from Code scanning alerts, Dependabot, secret scanning, and configuration checks._
+
+To update these numbers:
+1. Visit https://github.com/triple-labs/ton/security
+2. Count alerts by severity in each category
+3. Update the counts below
+
+- **Critical**: _See Security Dashboard_
+- **High**: _See Security Dashboard_
+- **Medium**: _See Security Dashboard_
+- **Low**: _See Security Dashboard_
 
 ### By Type
-- **CodeQL Alerts**: _update with current count after latest scan_
-- **Dependency Vulnerabilities**: _update with current count after latest scan_
-- **Secret Scanning**: _update with current count after latest scan_
-- **Configuration Issues**: _update with current count after latest scan_
+- **CodeQL Alerts**: _See Code Scanning tab_
+- **Dependency Vulnerabilities**: _See Dependabot tab_
+- **Secret Scanning**: _See Secret Scanning tab_
+- **Configuration Issues**: _Manual audit required_
 
 ## Priority Matrix
 
@@ -171,13 +178,11 @@ Issues are prioritized using the following criteria:
 
 If an alert is a false positive:
 
-1. Document why it's a false positive
-2. Add suppression comment in code if appropriate:
-   ```cpp
-   // NOLINTNEXTLINE(category-name) - Justification
-   ```
-3. Dismiss the alert in GitHub with detailed reasoning
-4. Update this document with the pattern to help future triage
+1. Document why it's a false positive (include links to specs, tests, or other evidence)
+2. In GitHub's **Security > Code scanning alerts**, dismiss the alert as **False positive** (or the most appropriate reason) and provide a clear justification in the dismissal comment
+3. If similar false positives recur, adjust the **CodeQL configuration/queries** (for example, tune the CodeQL config file, scope or disable specific queries, or add path filters) so the tool behavior matches the project's intent
+4. If other linters (such as clang-tidy) also report the same pattern, use their suppression mechanisms (for example, `// NOLINTNEXTLINE(...)`) as needed. Note: these comments do **not** affect CodeQL alerting
+5. Update this document with the pattern and rationale to help future triage
 
 ## Accepted Risks
 
@@ -232,11 +237,14 @@ If you discover a security vulnerability:
 
 1. **DO NOT** open a public GitHub issue
 2. Follow the process in [SECURITY.md](../SECURITY.md)
-3. Email security contacts with:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if known)
+3. Report via **GitHub Security Advisories** (preferred method):
+   - Navigate to: https://github.com/triple-labs/ton/security/advisories
+   - Click "New draft security advisory"
+   - Provide:
+     - Description of the vulnerability
+     - Steps to reproduce
+     - Potential impact
+     - Suggested fix (if known)
 
 ## Metrics and Reporting
 
@@ -287,12 +295,12 @@ If you discover a security vulnerability:
 ## Contact
 
 For questions about security issues or this tracking document:
-- Security Team: [TBD]
-- Security Email: [TBD]
-- Incident Response: [TBD]
+- Report vulnerabilities via **GitHub Security Advisories**: https://github.com/triple-labs/ton/security/advisories
+- General security questions: Use the repository's **Security** tab
+- This document is maintained based on issues and advisories reported through those channels
 
 ---
 
 **Last Updated**: February 10, 2026
-**Next Review**: TBD
+**Next Review**: May 10, 2026
 **Owner**: Security Team

@@ -103,6 +103,19 @@ class SecurityAnalyzer:
         report.append("-" * 80)
         report.append(f"Total Issues: {len(self.issues)}")
         
+        # Add collected stats from analysis
+        if self.stats:
+            report.append("\nDependency Files Found:")
+            if self.stats.get('dependency_files'):
+                report.append(f"  Total dependency files: {self.stats['dependency_files']}")
+            
+            codeql_stats = {k: v for k, v in self.stats.items() if k.startswith('codeql_')}
+            if codeql_stats:
+                report.append("\nCodeQL Issues by Severity:")
+                for severity, count in sorted(codeql_stats.items()):
+                    clean_severity = severity.replace('codeql_', '')
+                    report.append(f"  {clean_severity}: {count}")
+        
         if self.issues:
             report.append("\nBy Type:")
             type_counts = defaultdict(int)

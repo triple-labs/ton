@@ -216,9 +216,10 @@ Configures CodeQL static analysis:
 ### False Positives
 
 If CodeQL reports a false positive:
-1. Document why it's a false positive
-2. Add suppression comment: `// NOLINTNEXTLINE(rule-name) - Reason`
-3. Dismiss in GitHub with detailed explanation
+1. Verify the alert and document why it's a false positive (in code comments or design docs)
+2. In GitHub's **Code scanning alerts** view, dismiss the alert with an appropriate reason and a clear explanation
+3. If the pattern is consistently safe, update the CodeQL configuration or queries to exclude it, and record the rationale in `SECURITY_TRACKING.md`
+4. Note: `// NOLINTNEXTLINE(...)` comments are for clang-tidy/linters and do **not** affect CodeQL alerting
 
 ### Dependency Conflicts
 
@@ -254,8 +255,8 @@ If CodeQL build fails:
 ### Support
 
 - GitHub Security: https://github.com/security
-- TON Community: [TBD]
-- Security Team: [TBD]
+- Security Advisories: https://github.com/triple-labs/ton/security/advisories
+- General Questions: Open a GitHub discussion
 
 ## Contributing
 
