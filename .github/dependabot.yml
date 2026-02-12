@@ -11,7 +11,7 @@ updates:
   #   uv lock --upgrade-package <package-name>
   # Or regenerate the entire lockfile with:
   #   uv lock --upgrade
-  # Consider using a GitHub Action to automate uv.lock updates on Dependabot PRs.
+  # uv.lock updates on Dependabot PRs are automated via the GitHub Action in .github/workflows/update-uv-lock.yml.
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
