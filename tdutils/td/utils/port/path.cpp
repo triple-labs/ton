@@ -233,7 +233,8 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   if (fd == -1) {
     return OS_ERROR(PSLICE() << "Can't create temporary file \"" << file_pattern << '"');
   }
-  // Wrap the file descriptor directly to avoid TOCTOU race condition
+  // Wrap the file descriptor directly to avoid TOCTOU race condition.
+  // NativeFd takes ownership of fd, and FileFd::from_native_fd always succeeds.
   auto file = FileFd::from_native_fd(NativeFd(fd));
   return std::make_pair(std::move(file), std::move(file_pattern));
 }
