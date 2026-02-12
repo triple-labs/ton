@@ -2639,7 +2639,7 @@ class BenchBocDeserializer : public td::Benchmark {
             }
             ASSERT_EQ(fast_array_.get(td::narrow_cast<std::size_t>(pos)), array.get(td::narrow_cast<std::size_t>(pos)));
           }
-          stage.wait(config_.threads_n * (2 * round_i + 2));
+          stage.wait(static_cast<std::uint64_t>(config_.threads_n) * (2 * round_i + 2));
         }
       });
     }
