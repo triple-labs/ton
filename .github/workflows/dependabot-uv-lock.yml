@@ -25,7 +25,8 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          persist-credentials: false
+          ref: ${{ github.sha }}
       
       - name: Install uv
         run: |
