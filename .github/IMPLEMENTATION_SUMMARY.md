@@ -279,6 +279,7 @@ The framework scales to handle both the existing 137 issues and any future secur
 8. `.github/CUSTOM_PROPERTIES.md` - Custom properties documentation
 9. `.github/custom-properties.yml` - Custom properties configuration
 10. `.github/custom-properties-example.yml` - Custom properties example
+10. `.github/custom-properties-example.yml` - Custom properties example
 
 ### Modified Files (2)
 1. `SECURITY.md` - Enhanced security policy

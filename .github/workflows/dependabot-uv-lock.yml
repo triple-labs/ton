@@ -23,7 +23,7 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Setup uv
@@ -47,7 +47,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add uv.lock
           git commit -m "chore: update uv.lock after Dependabot changes"
-          git push origin HEAD:${{ github.head_ref }}
+          git push
       
       - name: Comment on PR
         if: steps.git-check.outputs.changed == 'true'
