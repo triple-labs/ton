@@ -69,7 +69,8 @@ td::Status CellSerializationInfo::init(td::uint8 d1, td::uint8 d2, int ref_byte_
   data_len = (d2 >> 1) + (d2 & 1);
   data_with_bits = (d2 & 1) != 0;
   refs_offset = data_offset + data_len;
-  end_offset = refs_offset + refs_cnt * ref_byte_size;
+  end_offset = refs_offset +
+               static_cast<int>(static_cast<std::size_t>(refs_cnt) * static_cast<std::size_t>(ref_byte_size));
 
   return td::Status::OK();
 }
@@ -426,7 +427,7 @@ std::size_t BagOfCells::estimate_serialized_size(int mode) {
   info.absent_count = dangle_count;
   int crc_size = info.has_crc32c ? 4 : 0;
   info.roots_offset = 4 + 1 + 1 + 3 * info.ref_byte_size + info.offset_byte_size;
-  info.index_offset = info.roots_offset + info.root_count * info.ref_byte_size;
+  info.index_offset = info.roots_offset + static_cast<long long>(info.root_count) * info.ref_byte_size;
   info.data_offset = info.index_offset;
   if (info.has_index) {
     info.data_offset += (long long)cell_count * info.offset_byte_size;
