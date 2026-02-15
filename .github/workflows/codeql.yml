@@ -85,7 +85,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++-21 \
           -DCMAKE_BUILD_TYPE=Release \
           -DTON_USE_JEMALLOC=ON \
-          -DTON_USE_LLD=On
+          -DTON_USE_LLD=ON
         ninja -C build
 
     - name: Perform CodeQL Analysis
