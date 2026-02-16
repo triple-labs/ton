@@ -6,6 +6,11 @@ name: Update uv.lock on Dependabot PRs
 
 on:
   pull_request_target:
+name: Sync uv.lock on Dependabot PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
     paths:
       - 'pyproject.toml'
 
@@ -21,6 +26,14 @@ jobs:
     
     steps:
       - name: Checkout PR
+    # Only run for Dependabot PRs from the same repository
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
@@ -30,6 +43,10 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           version: "0.4.30"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
       
       - name: Regenerate uv.lock
         run: |
@@ -60,3 +77,32 @@ jobs:
               repo: context.repo.repo,
               body: '✅ `uv.lock` has been automatically updated to match the changes in `pyproject.toml`.'
             })
+        id: check_changes
+        run: |
+          if git diff --quiet uv.lock; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit updated uv.lock
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git commit -m "chore: regenerate uv.lock after dependency update"
+          git push
+      
+      - name: Comment on PR
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: '✅ `uv.lock` has been automatically regenerated to match the updated `pyproject.toml`.'
+            });

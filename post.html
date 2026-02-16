@@ -1,0 +1,7 @@
+<!-- _includes/post.html -->
+<article>
+  {% assign level = page.heading_level | default: heading_level | default: 1 %}
+  {% capture heading_tag %}h{{ level }}{% endcapture %}
+  <{{ heading_tag }}>{{ page.title }}</{{ heading_tag }}>
+  <section>{{ content }}</section>
+</article>

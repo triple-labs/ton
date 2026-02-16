@@ -9,6 +9,9 @@ updates:
   # Dependabot's pip ecosystem will propose updates to pyproject.toml but won't 
   # update uv.lock automatically. uv.lock updates are automated via the GitHub Action
   # in .github/workflows/dependabot-uv-lock.yml which runs on Dependabot PRs.
+version: 2
+updates:
+  # Python dependencies (via pip ecosystem)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -21,6 +24,9 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
+    # Note: Dependabot's pip ecosystem doesn't auto-update uv.lock files.
+    # The dependabot-uv-lock.yml workflow automatically regenerates uv.lock
+    # when Dependabot updates pyproject.toml, keeping lockfiles in sync.
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
@@ -49,6 +55,11 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "security"
 
   # Docker dependencies
   - package-ecosystem: "docker"
@@ -70,3 +81,9 @@ updates:
 # - Version updates follow the schedule defined above
 # - PRs are auto-labeled for easy filtering and review
 # - Configure appropriate reviewers and assignees for your team
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "docker"
+      - "security"

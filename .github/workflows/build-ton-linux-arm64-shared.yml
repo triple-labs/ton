@@ -2,6 +2,9 @@ name: Ubuntu TON build (shared, arm64)
 
 on: [push, pull_request, workflow_dispatch, workflow_call]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
@@ -39,14 +42,14 @@ jobs:
 
     - name: Cache OpenSSL
       id: cache-openssl
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: openssl_3
         key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}-openssl_3-${{ hashFiles('**/assembly/native/build-ubuntu-shared.sh') }}
 
     - name: Cache TON test
       id: cache-ton
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.ccache
         key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}-shared-ccache-${{ steps.date-stamp.outputs.timestamp }}
