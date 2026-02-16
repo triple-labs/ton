@@ -61,6 +61,11 @@ async function main() {
         }
         fiftArgs.push(runnerPath);
         const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', fiftArgs, {
+        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', [
+            '-I',
+            process.env.FIFT_LIBS,
+            runnerPath
+        ], {
             stdio: ['pipe', 'pipe', 'ignore']
         }).toString('utf-8')
 

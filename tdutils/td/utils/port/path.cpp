@@ -75,15 +75,19 @@ Status set_temporary_dir(CSlice dir) {
 Status mkpath(CSlice path, int32 mode) {
   Status first_error = Status::OK();
   Status last_error = Status::OK();
+  bool has_error = false;
   for (size_t i = 1; i < path.size(); i++) {
     if (path[i] == TD_DIR_SLASH) {
       last_error = mkdir(PSLICE() << path.substr(0, i), mode);
-      if (last_error.is_error() && first_error.is_ok()) {
-        first_error = last_error.clone();
+      if (last_error.is_error()) {
+        if (first_error.is_ok()) {
+          first_error = last_error.clone();
+        }
+        has_error = true;
       }
     }
   }
-  if (last_error.is_error()) {
+  if (has_error) {
     if (last_error.message() == first_error.message() && last_error.code() == first_error.code()) {
       return first_error;
     }
@@ -127,8 +131,11 @@ Status mkdir(CSlice dir, int32 mode) {
   }
   auto mkdir_errno = errno;
   if (mkdir_errno == EEXIST) {
-    // TODO check that it is a directory
-    return Status::OK();
+    struct stat st;
+    if (::stat(dir.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
+      return Status::OK();
+    }
+    return Status::PosixError(mkdir_errno, PSLICE() << "Path \"" << dir << "\" exists and is not a directory");
   }
   return Status::PosixError(mkdir_errno, PSLICE() << "Can't create directory \"" << dir << '"');
 }
@@ -452,7 +459,7 @@ Result<string> realpath(CSlice slice, bool ignore_access_denied) {
   auto status = GetFullPathNameW(wslice.c_str(), MAX_PATH, buf, nullptr);
   string res;
   if (status == 0) {
-    if (ignore_access_denied && errno == ERROR_ACCESS_DENIED) {
+    if (ignore_access_denied && GetLastError() == ERROR_ACCESS_DENIED) {
       res = slice.str();
     } else {
       return OS_ERROR(PSLICE() << "GetFullPathNameW failed for \"" << slice << '"');
@@ -520,6 +527,8 @@ CSlice get_temporary_dir() {
   return temporary_dir;
 }
 
+constexpr int MKDTEMP_MAX_RETRY_ATTEMPTS = 20;
+
 Result<string> mkdtemp(CSlice dir, Slice prefix) {
   if (dir.empty()) {
     dir = get_temporary_dir();
@@ -539,7 +548,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   }
   dir_pattern.append(prefix.begin(), prefix.size());
 
-  for (auto iter = 0; iter < 20; iter++) {
+  for (auto iter = 0; iter < MKDTEMP_MAX_RETRY_ATTEMPTS; iter++) {
     auto path = dir_pattern;
     for (int i = 0; i < 6 + iter / 5; i++) {
       path += static_cast<char>(Random::fast('a', 'z'));
@@ -552,6 +561,7 @@ Result<string> mkdtemp(CSlice dir, Slice prefix) {
   return Status::Error(PSLICE() << "Can't create temporary directory \"" << dir_pattern << '"');
 }
 
+constexpr int MAX_TEMP_FILE_RETRY_ATTEMPTS = 20;
 Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   if (dir.empty()) {
     dir = get_temporary_dir();
@@ -571,7 +581,7 @@ Result<std::pair<FileFd, string>> mkstemp(CSlice dir) {
   }
   file_pattern += "tmp";
 
-  for (auto iter = 0; iter < 20; iter++) {
+  for (auto iter = 0; iter < MAX_TEMP_FILE_RETRY_ATTEMPTS; iter++) {
     auto path = file_pattern;
     for (int i = 0; i < 6 + iter / 5; i++) {
       path += static_cast<char>(Random::fast('a', 'z'));
