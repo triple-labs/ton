@@ -54,11 +54,13 @@ async function main() {
         await fs.writeFile(compiledPath, '"Asm.fif" include\n' + JSON.parse('"' + result.fiftCode + '"'));
         await fs.writeFile(runnerPath, `"${compiledPath}" include <s constant code\n${testCases.map(t => `${t[1]} ${t[0]} code 1 runvmx abort"exitcode is not 0" .s cr { drop } depth 1- times`).join('\n')}`)
 
-        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', [
-            '-I',
-            process.env.FIFT_LIBS,
-            runnerPath
-        ], {
+        const includePath = process.env.FIFT_LIBS || process.env.FIFTPATH;
+        const fiftArgs = [];
+        if (includePath) {
+            fiftArgs.push('-I', includePath);
+        }
+        fiftArgs.push(runnerPath);
+        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', fiftArgs, {
             stdio: ['pipe', 'pipe', 'ignore']
         }).toString('utf-8')
 
