@@ -1,10 +1,9 @@
 FROM ubuntu:24.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-        rm /var/lib/dpkg/info/libc-bin.* && \
+RUN rm /var/lib/dpkg/info/libc-bin.* && \
         apt-get clean && \
         apt-get update && \
-        apt install libc-bin && \
+        apt install -y libc-bin && \
         apt-get install -y build-essential cmake clang openssl libssl-dev zlib1g-dev gperf wget git \
         ninja-build libsodium-dev libmicrohttpd-dev liblz4-dev pkg-config autoconf automake libtool \
         libjemalloc-dev lsb-release software-properties-common gnupg
@@ -27,9 +26,9 @@ COPY ./ ./
 RUN mkdir build && \
         cd build && \
         cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPORTABLE=1 -DTON_ARCH= -DTON_USE_JEMALLOC=ON .. && \
-        ninja storage-daemon storage-daemon-cli tonlibjson fift func validator-engine validator-engine-console \
+        NINJA_TARGETS="storage-daemon storage-daemon-cli tonlibjson fift func validator-engine validator-engine-console \
     generate-random-id dht-server lite-client tolk rldp-http-proxy dht-server proxy-liteserver create-state \
-    blockchain-explorer emulator tonlibjson http-proxy adnl-proxy dht-ping-servers dht-resolve
+    blockchain-explorer emulator tonlibjson http-proxy adnl-proxy dht-ping-servers dht-resolve" && ninja ${NINJA_TARGETS}
 
 FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
@@ -55,8 +54,8 @@ COPY --from=builder /ton/build/dht/dht-resolve /usr/local/bin/
 COPY --from=builder /ton/build/rldp-http-proxy/rldp-http-proxy /usr/local/bin/
 COPY --from=builder /ton/build/http/http-proxy  /usr/local/bin/
 COPY --from=builder /ton/build/adnl/adnl-proxy  /usr/local/bin/
-COPY --from=builder /ton/build/tonlib/libtonlibjson.so /usr/local/bin/
-COPY --from=builder /ton/build/emulator/libemulator.so /usr/local/bin/
+COPY --from=builder /ton/build/tonlib/libtonlibjson.so /usr/local/lib/
+COPY --from=builder /ton/build/emulator/libemulator.so /usr/local/lib/
 COPY --from=builder /ton/build/tolk/tolk /usr/local/bin/
 COPY --from=builder /ton/build/crypto/fift /usr/local/bin/
 COPY --from=builder /ton/build/crypto/func /usr/local/bin/
