@@ -283,12 +283,12 @@ void bench_threaded(F &&f) {
         threads.emplace_back([&]() mutable {
           auto bench = f_();
           while (true) {
-            i = task_i.fetch_add(chunk_size, std::memory_order_relaxed);
-            auto i_end = std::min(n, i + chunk_size);
-            if (i > n) {
+            int task_index = task_i.fetch_add(chunk_size, std::memory_order_relaxed);
+            auto i_end = std::min(n, task_index + chunk_size);
+            if (task_index > n) {
               break;
             }
-            bench.run(i_end - i);
+            bench.run(i_end - task_index);
           }
         });
       }
@@ -466,7 +466,7 @@ class CellExplorer {
     if (cs_.not_null()) {
       int children_mask = 0;
       if (cs_->size_refs() != 0 && rnd.fast(0, 3) != 0) {
-        //children_mask = rnd.fast(1, (1 << cs_->size_refs()) - 1);
+        // Use all available children (was previously a random subset).
         children_mask = (1 << cs_->size_refs()) - 1;
       }
       do_op({Op::ReadCellSlice, false, children_mask});
@@ -625,7 +625,11 @@ Ref<Cell> gen_random_cell(int size, td::Random::Xorshift128plus &rnd, bool with_
                           std::vector<Ref<Cell>> cells = {}) {
   if (!cells.empty()) {
     td::random_shuffle(as_mutable_span(cells), rnd);
-    cells.resize(cells.size() % rnd());
+    auto divisor = rnd();
+    if (divisor == 0) {
+      divisor = 1;
+    }
+    cells.resize(cells.size() % divisor);
   }
   return RandomBagOfCells(size, rnd, with_prunned_branches, std::move(cells)).get_root();
 }
@@ -633,7 +637,9 @@ std::vector<Ref<Cell>> gen_random_cells(int roots, int size, td::Random::Xorshif
                                         bool with_prunned_branches = true, std::vector<Ref<Cell>> cells = {}) {
   if (!cells.empty()) {
     td::random_shuffle(as_mutable_span(cells), rnd);
-    cells.resize(cells.size() % rnd());
+    auto rnd_value = rnd();
+    auto denom = rnd_value == 0 ? 1 : rnd_value;
+    cells.resize(cells.size() % denom);
   }
   return RandomBagOfCells(size, rnd, with_prunned_branches, std::move(cells)).get_random_roots(roots, rnd);
 }
@@ -753,7 +759,7 @@ TEST(Cell, MerkleProofCombine) {
   }
 };
 
-int X = 20;
+constexpr int kMaxRandomCellSizeForMerkleUpdate = 20;
 Ref<Cell> gen_random_cell(int size, Ref<Cell> from, td::Random::Xorshift128plus &rnd,
                           bool with_prunned_branches = true) {
   auto exploration = CellExplorer::random_explore(from, rnd);
@@ -762,7 +768,7 @@ Ref<Cell> gen_random_cell(int size, Ref<Cell> from, td::Random::Xorshift128plus 
 auto gen_merkle_update(Ref<Cell> cell, td::Random::Xorshift128plus &rnd, bool with_prunned_branches) {
   auto usage_tree = std::make_shared<CellUsageTree>();
   auto usage_cell = UsageCell::create(cell, usage_tree->root_ptr());
-  auto new_cell = gen_random_cell(rnd.fast(1, X), usage_cell, rnd, with_prunned_branches);
+  auto new_cell = gen_random_cell(rnd.fast(1, kMaxRandomCellSizeForMerkleUpdate), usage_cell, rnd, with_prunned_branches);
   auto update = MerkleUpdate::generate(cell, new_cell, usage_tree.get());
   return std::make_tuple(new_cell, update, usage_tree);
 };
