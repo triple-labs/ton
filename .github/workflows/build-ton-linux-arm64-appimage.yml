@@ -37,20 +37,20 @@ jobs:
 
     - name: Cache 3pp
       id: cache-3pp
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: 3pp
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-arm-3pp-${{ hashFiles('**/assembly/native/build-ubuntu-appimages.sh') }}
 
     - name: Cache OpenSSL
       id: cache-openssl
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: openssl_3
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-arm-openssl_3-${{ hashFiles('**/assembly/native/build-ubuntu-appimages.sh') }}
 
     - name: Restore cache TON
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ~/.ccache
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-arm-portable-ccache-${{ steps.date-stamp.outputs.timestamp }}
@@ -66,7 +66,7 @@ jobs:
         ccache -sp
 
     - name: Save cache TON
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ~/.ccache
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-arm-portable-ccache-${{ steps.date-stamp.outputs.timestamp }}
@@ -81,7 +81,7 @@ jobs:
         rm -rf artifacts
 
     - name: Save/Restore cache TON libs
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.ccache
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-arm-portable-libs-ccache-${{ steps.date-stamp.outputs.timestamp }}

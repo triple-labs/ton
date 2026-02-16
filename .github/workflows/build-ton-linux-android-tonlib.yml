@@ -24,7 +24,7 @@ jobs:
 
     - name: Cache Android NDK
       id: cache-android-ndk
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: android-ndk-r25b
         key: ${{ runner.os }}-${{ runner.arch }}-ubuntu-22.04-cache-android-ndk-${{ hashFiles('**/assembly/android/build-android-tonlib.sh') }}
