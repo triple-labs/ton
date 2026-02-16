@@ -4,6 +4,21 @@ const path = require('path');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
 const { execFileSync } = require('child_process');
 
+function safeEvalExpression(expr) {
+    // Allow only digits, hex marker 'x', basic math operators, comparison operators, parentheses, and optional 'n' for BigInt.
+    if (!/^[0-9x()+\-*/<>n\s]*$/i.test(expr)) {
+        throw new Error('Unsafe characters in expression: ' + expr);
+    }
+
+    // Evaluate a simple arithmetic expression using Function in a restricted way.
+    // Since we have validated the characters, this is safer than using raw eval on untrusted input.
+    // We also explicitly disallow accessing any identifiers by ensuring the pattern above.
+    // Use BigInt-aware evaluation where 'n' suffix is present.
+    // eslint-disable-next-line no-new-func
+    const fn = new Function('"use strict"; return (' + expr + ');');
+    return fn();
+}
+
 async function main() {
     const compiledPath = path.join(os.tmpdir(), 'compiled.fif');
     const runnerPath = path.join(os.tmpdir(), 'runner.fif');
@@ -19,7 +34,7 @@ async function main() {
 
         if (result.status !== 'ok') {
             console.error(result);
-            throw new Error('Could not compile ' + filename);
+            throw new Error('Could not compile ' + testFile);
         }
 
         const fileLines = (await fs.readFile(testFile)).toString('utf-8').split('\n');
@@ -40,19 +55,27 @@ async function main() {
                 }
 
                 if (input.length === 0) {
-                    continue
+                    continue;
                 }
 
-                const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replace('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
+                const allowedCharsOnly = input.split('').filter(c => mathChars.includes(c)).join('');
+                const normalizedDiv = allowedCharsOnly.replace('//', '/');
+                const withBigIntSuffixes = normalizedDiv.replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2');
+                const replacedInput = withBigIntSuffixes;
 
-                processedInputs.push(eval(replacedInput).toString());
+                processedInputs.push(safeEvalExpression(replacedInput).toString());
             }
 
             testCases.push([parts[1], processedInputs.join(' '), parts[3]]);
         }
 
         await fs.writeFile(compiledPath, '"Asm.fif" include\n' + JSON.parse('"' + result.fiftCode + '"'));
-        await fs.writeFile(runnerPath, `"${compiledPath}" include <s constant code\n${testCases.map(t => `${t[1]} ${t[0]} code 1 runvmx abort"exitcode is not 0" .s cr { drop } depth 1- times`).join('\n')}`)
+        const runnerBodyLines = testCases.map(
+            t => `${t[1]} ${t[0]} code 1 runvmx abort"exitcode is not 0" .s cr { drop } depth 1- times`
+        );
+        const runnerBody = runnerBodyLines.join('\n');
+        const runnerScript = `"${compiledPath}" include <s constant code\n${runnerBody}`;
+        await fs.writeFile(runnerPath, runnerScript);
 
         const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', [
             '-I',
