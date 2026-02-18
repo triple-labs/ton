@@ -60,7 +60,7 @@ async function main() {
 
                 const allowedCharsOnly = input.split('').filter(c => mathChars.includes(c)).join('');
                 const normalizedDiv = allowedCharsOnly.replace('//', '/');
-                const withBigIntSuffixes = normalizedDiv.replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2');
+                const withBigIntSuffixes = normalizedDiv.replace(/([0-9])($|[^0-9x])/gm, '$1n$2');
                 const replacedInput = withBigIntSuffixes;
 
                 processedInputs.push(safeEvalExpression(replacedInput).toString());
