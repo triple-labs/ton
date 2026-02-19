@@ -139,7 +139,8 @@ async function main() {
     const compiledPath = path.join(tmpDir, 'compiled.fif');
     const runnerPath = path.join(tmpDir, 'runner.fif');
 
-    const tests = (await fs.readdir('.')).filter(f => f.endsWith('.fc')).sort();
+    try {
+        const tests = (await fs.readdir('.')).filter(f => f.endsWith('.fc')).sort();
 
     const mathChars = '0x123456789abcdefABCDEF()+-*/<>'.split('')
 
@@ -215,6 +216,10 @@ async function main() {
         }
 
         console.log(testFile, 'ok')
+    }
+    } finally {
+        // Clean up temporary directory
+        fsSync.rmSync(tmpDir, { recursive: true, force: true });
     }
 }
 
