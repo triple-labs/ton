@@ -8,8 +8,8 @@ import shutil
 add_pragmas = [] #["allow-post-modification", "compute-asm-ltr"];
 
 tests = [
-    # note, that deployed version of elector,config and multisig differ since it is compilled with func-0.1.0.
-    # Newer compillators optimize arithmetic and logic expression that can be calculated at the compile time
+    # note, that deployed version of elector,config and multisig differ since it is compiled with func-0.1.0.
+    # Newer compilers optimize arithmetic and logic expression that can be calculated at the compile time
     ["elector/elector-code.fc", 115226404411715505328583639896096915745686314074575650766750648324043316883483],
     ["config/config-code.fc", 10913070768607625342121305745084703121685937915388357634624451844356456145601],
     ["eth-bridge-multisig/multisig-code.fc", 101509909129354488841890823627011033360100627957439967918234053299675481277954],
