@@ -5,7 +5,9 @@ import sys
 import tempfile
 import shutil
 
-add_pragmas = [] #["allow-post-modification", "compute-asm-ltr"];
+# Additional pragmas for the compiler can be specified via this list.
+# For example: ["allow-post-modification", "compute-asm-ltr"].
+add_pragmas = []
 
 tests = [
     # note, that deployed version of elector,config and multisig differ since it is compiled with func-0.1.0.
@@ -57,6 +59,7 @@ COMPILED_FIF = os.path.join(TMP_DIR, "compiled.fif")
 RUNNER_FIF = os.path.join(TMP_DIR, "runner.fif")
 
 TESTS_DIR = "legacy_tests"
+SUBPROCESS_TIMEOUT = 10
 
 class ExecutionError(Exception):
     pass
@@ -88,17 +91,17 @@ def compile_func(f):
             COMPILED_ST_FIF = os.path.join(TMP_DIR, "storage-contract.fif")
             COMPILED_ST_BOC = os.path.join(TMP_DIR, "storage-contract-code.boc")
             COMPILED_BUILD_BOC = os.path.join(TMP_DIR, "build-boc.fif")
-            res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_ST_FIF, "-SPA", f.replace("storage-provider.fc","storage-contract.fc")], capture_output=True, timeout=10)
+            res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_ST_FIF, "-SPA", f.replace("storage-provider.fc","storage-contract.fc")], capture_output=True, timeout=SUBPROCESS_TIMEOUT)
             if res.returncode != 0:
                 raise ExecutionError(str(res.stderr, "utf-8"))
             with open(COMPILED_BUILD_BOC, "w") as scr:
                 scr.write("\"%s\" include boc>B \"%s\" B>file "%(COMPILED_ST_FIF, COMPILED_ST_BOC))
-            res = subprocess.run([FIFT_EXECUTABLE, COMPILED_BUILD_BOC ], capture_output=True, timeout=10)
+            res = subprocess.run([FIFT_EXECUTABLE, COMPILED_BUILD_BOC ], capture_output=True, timeout=SUBPROCESS_TIMEOUT)
             if res.returncode != 0:
                 raise ExecutionError(str(res.stderr, "utf-8"))
 
 
-        res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_FIF, "-SPA", f], capture_output=True, timeout=10)
+        res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_FIF, "-SPA", f], capture_output=True, timeout=SUBPROCESS_TIMEOUT)
     except Exception as e:
         post_process_func(f)
         raise e
@@ -108,7 +111,7 @@ def compile_func(f):
         raise ExecutionError(str(res.stderr, "utf-8"))
 
 def run_runner():
-    res = subprocess.run([FIFT_EXECUTABLE, RUNNER_FIF], capture_output=True, timeout=10)
+    res = subprocess.run([FIFT_EXECUTABLE, RUNNER_FIF], capture_output=True, timeout=SUBPROCESS_TIMEOUT)
     if res.returncode != 0:
         raise ExecutionError(str(res.stderr, "utf-8"))
     s = str(res.stdout, "utf-8")
@@ -116,7 +119,7 @@ def run_runner():
     return int(s)
 
 def get_version():
-    res = subprocess.run([FUNC_EXECUTABLE, "-s"], capture_output=True, timeout=10)
+    res = subprocess.run([FUNC_EXECUTABLE, "-s"], capture_output=True, timeout=SUBPROCESS_TIMEOUT)
     if res.returncode != 0:
         raise ExecutionError(str(res.stderr, "utf-8"))
     s = str(res.stdout, "utf-8")
