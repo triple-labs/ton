@@ -469,24 +469,23 @@ async function run_all_tests(/**string[]*/ tests) {
 
 const tests = new CmdLineOptions(process.argv).find_tests()
 print(`Found ${tests.length} tests`)
+
+function cleanupTempDir() {
+    try {
+        fs.rmSync(TMP_DIR, { recursive: true, force: true });
+    } catch (e) {
+        // Ignore cleanup errors
+    }
+}
+
 run_all_tests(tests).then(
     () => {
         print(`Done, ${tests.length} tests`)
-        // Clean up temporary directory
-        try {
-            fs.rmSync(TMP_DIR, { recursive: true, force: true });
-        } catch (e) {
-            // Ignore cleanup errors
-        }
+        cleanupTempDir();
     },
     (err) => {
         console.error(err);
-        // Clean up temporary directory even on error
-        try {
-            fs.rmSync(TMP_DIR, { recursive: true, force: true });
-        } catch (e) {
-            // Ignore cleanup errors
-        }
+        cleanupTempDir();
         process.exit(1);
     }
 )
