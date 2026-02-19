@@ -11,7 +11,7 @@ async function main() {
 
     const tests = (await fs.readdir('.')).filter(f => f.endsWith('.fc')).sort();
 
-    const mathChars = '0x123456789()+-*/<>'.split('')
+    const mathChars = '0x123456789abcdefABCDEF()+-*/<>'.split('')
 
     for (const testFile of tests) {
         const mod = await compileWasm()
@@ -50,9 +50,9 @@ async function main() {
                 //  - append 'n' to hexadecimal digits that are followed by a non-hex/non-'x'
                 //    character or end-of-string so they are treated as BigInt literals.
                 // The resulting expression string is then evaluated with vm.runInNewContext() below.
-                const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replace('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
+                const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replaceAll('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
 
-                processedInputs.push(vm.runInNewContext(replacedInput, {}).toString());
+                processedInputs.push(vm.runInNewContext(replacedInput, {}, { timeout: 1000 }).toString());
             }
 
             testCases.push([parts[1], processedInputs.join(' '), parts[3]]);
