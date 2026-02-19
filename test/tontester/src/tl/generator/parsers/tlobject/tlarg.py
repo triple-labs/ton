@@ -77,8 +77,6 @@ class TLArg:
         cls = self.type
         # if '.' in cls:
         #     cls = snake_to_camel_case('_'.join(cls.split('.')))
-        result = {
-            "int": "int",
             "long": "int",
             "int64": "int",
             "int32": "int",
