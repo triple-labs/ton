@@ -28,7 +28,7 @@ const TOLKFIFTLIB_WASM = getenv('TOLKFIFTLIB_WASM')
 const FIFT_EXECUTABLE = getenv('FIFT_EXECUTABLE')
 const FIFT_LIBS_FOLDER = getenv('FIFTPATH')  // this env is needed for fift to work properly
 const STDLIB_FOLDER = __dirname + '/../crypto/smartcont/tolk-stdlib'
-const TMP_DIR = os.tmpdir()
+const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'tolk-tester-'))
 
 class CmdLineOptions {
     constructor(/**string[]*/ argv) {
