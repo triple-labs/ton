@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
 const { execFileSync } = require('child_process');
+const vm = require('vm');
 
 async function main() {
     const compiledPath = path.join(os.tmpdir(), 'compiled.fif');
@@ -10,7 +11,7 @@ async function main() {
 
     const tests = (await fs.readdir('.')).filter(f => f.endsWith('.fc')).sort();
 
-    const mathChars = '0x123456789()+-*/<>'.split('')
+    const mathChars = '0x123456789abcdefABCDEF()+-*/<>'.split('')
 
     for (const testFile of tests) {
         const mod = await compileWasm()
@@ -19,7 +20,7 @@ async function main() {
 
         if (result.status !== 'ok') {
             console.error(result);
-            throw new Error('Could not compile ' + filename);
+            throw new Error('Could not compile ' + testFile);
         }
 
         const fileLines = (await fs.readFile(testFile)).toString('utf-8').split('\n');
@@ -43,9 +44,15 @@ async function main() {
                     continue
                 }
 
-                const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replace('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
+                // Normalize the input into a JavaScript arithmetic expression:
+                //  - keep only allowed "mathChars" (hex digits and basic operators),
+                //  - collapse '//' into '/' to avoid accidental integer-division notation,
+                //  - append 'n' to hexadecimal digits that are followed by a non-hex/non-'x'
+                //    character or end-of-string so they are treated as BigInt literals.
+                // The resulting expression string is then evaluated with vm.runInNewContext() below.
+                const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replaceAll('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
 
-                processedInputs.push(eval(replacedInput).toString());
+                processedInputs.push(vm.runInNewContext(replacedInput, {}, { timeout: 1000 }).toString());
             }
 
             testCases.push([parts[1], processedInputs.join(' '), parts[3]]);
@@ -61,11 +68,6 @@ async function main() {
         }
         fiftArgs.push(runnerPath);
         const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', fiftArgs, {
-        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', [
-            '-I',
-            process.env.FIFT_LIBS,
-            runnerPath
-        ], {
             stdio: ['pipe', 'pipe', 'ignore']
         }).toString('utf-8')
 
@@ -75,9 +77,9 @@ async function main() {
             throw new Error(`Got ${testResults.length} results but there are ${testCases.length} cases`)
         }
 
-        for (let i = 0; i < testResults.length; i++) {
-            if (testResults[i] !== testCases[i][2]) {
-                throw new Error(`Unequal result ${testResults[i]} and case ${testCases[i][2]}`)
+        for (let testIndex = 0; testIndex < testResults.length; testIndex++) {
+            if (testResults[testIndex] !== testCases[testIndex][2]) {
+                throw new Error(`Unequal result ${testResults[testIndex]} and case ${testCases[testIndex][2]}`)
             }
         }
 
