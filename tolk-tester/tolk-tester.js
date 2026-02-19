@@ -28,7 +28,7 @@ const TOLKFIFTLIB_WASM = getenv('TOLKFIFTLIB_WASM')
 const FIFT_EXECUTABLE = getenv('FIFT_EXECUTABLE')
 const FIFT_LIBS_FOLDER = getenv('FIFTPATH')  // this env is needed for fift to work properly
 const STDLIB_FOLDER = __dirname + '/../crypto/smartcont/tolk-stdlib'
-const TMP_DIR = os.tmpdir()
+const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'tolk-tester-'))
 
 class CmdLineOptions {
     constructor(/**string[]*/ argv) {
@@ -469,9 +469,25 @@ async function run_all_tests(/**string[]*/ tests) {
 
 const tests = new CmdLineOptions(process.argv).find_tests()
 print(`Found ${tests.length} tests`)
+
+function cleanupTempDir() {
+    try {
+        fs.rmSync(TMP_DIR, { recursive: true, force: true });
+    } catch (e) {
+        // Ignore cleanup errors
+    }
+}
+
 run_all_tests(tests).then(
-    () => print(`Done, ${tests.length} tests`),
-    console.error
+    () => {
+        print(`Done, ${tests.length} tests`)
+        cleanupTempDir();
+    },
+    (err) => {
+        console.error(err);
+        cleanupTempDir();
+        process.exit(1);
+    }
 )
 
 // below are WASM helpers, which don't exist in Python version
