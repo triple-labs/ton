@@ -196,7 +196,23 @@ async function main() {
             fiftArgs.push('-I', includePath);
         }
         fiftArgs.push(runnerPath);
-        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', fiftArgs, {
+        // Determine which Fift executable to use. Default to 'fift' and only
+        // honor an override from the environment if it looks safe.
+        let fiftExecutable = 'fift';
+        if (process.env.FIFT_EXECUTABLE) {
+            const candidate = process.env.FIFT_EXECUTABLE;
+            // Allow either the bare program name "fift" or an absolute path whose
+            // basename is "fift". This prevents executing arbitrary tools.
+            const candidateBasename = path.basename(candidate);
+            if (candidateBasename === 'fift' && path.isAbsolute(candidate)) {
+                fiftExecutable = candidate;
+            } else if (candidate === 'fift') {
+                fiftExecutable = candidate;
+            } else {
+                console.warn('Ignoring unsafe FIFT_EXECUTABLE value:', candidate);
+            }
+        }
+        const fiftResult = execFileSync(fiftExecutable, fiftArgs, {
             stdio: ['pipe', 'pipe', 'ignore']
         }).toString('utf-8')
 
