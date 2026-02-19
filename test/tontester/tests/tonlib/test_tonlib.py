@@ -207,7 +207,7 @@ async def test_read_results_error_cancels_inflight_requests(
         with pytest.raises(RuntimeError, match="Simulated error in _read_results"):
             await task2
         with pytest.raises(RuntimeError, match="Simulated error in _read_results"):
-            await task3
+            _ = await task3
 
         with pytest.raises(AssertionError, match="TonLib failed with state"):
             _ = await tonlib_client.get_masterchain_info()
