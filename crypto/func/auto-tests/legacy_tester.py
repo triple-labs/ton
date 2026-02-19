@@ -20,7 +20,7 @@ tests = [
     ["dns-collection/nft-collection.fc", 107999822699841936063083742021519765435859194241091312445235370766165379261859],
 
 
-    # note, that deployed version of tele-nft-item differs since it is compilled with func-0.3.0.
+    # note, that deployed version of tele-nft-item differs since it is compiled with func-0.3.0.
     # After introducing of try/catch construction, c2 register is not always the default one.
     # Thus it is necessary to save it upon jumps, differences of deployed and below compilled is that
     # "c2 SAVE" is added to the beginning of recv_internal. It does not change behavior.
