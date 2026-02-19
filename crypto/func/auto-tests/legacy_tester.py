@@ -77,7 +77,7 @@ def compile_func(f):
     res = None
     try:
         pre_process_func(f)
-        if "storage-provider.fc" in f :
+        if os.path.basename(f) == "storage-provider.fc":
             # This contract requires building of storage-contract to include it as ref
             with open(f, "r") as src:
                 sources = src.read()
