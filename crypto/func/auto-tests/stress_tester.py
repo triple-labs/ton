@@ -12,6 +12,7 @@ def getenv(name, default=None):
         return default
     print("Environemnt variable", name, "is not set", file=sys.stderr)
     exit(1)
+    return None
 
 VAR_CNT = 10
 TMP_DIR = tempfile.mkdtemp()
