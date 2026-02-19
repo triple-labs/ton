@@ -440,7 +440,8 @@ def run_all_tests(tests: List[str]):
         except CompareFifCodegenError as e:
             print("  Mismatch in fif codegen:", e, file=sys.stderr)
             print("  Was compiled to:", testcase.get_compiled_fif_filename(), file=sys.stderr)
-            print(open(testcase.get_compiled_fif_filename()).read(), file=sys.stderr)
+            with open(testcase.get_compiled_fif_filename()) as compiled_fif_file:
+                print(compiled_fif_file.read(), file=sys.stderr)
             exit(2)
         except CompareCodeHashError as e:
             print("  Mismatch in code hash:", e, file=sys.stderr)
