@@ -3,7 +3,135 @@ const os = require('os');
 const path = require('path');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
 const { execFileSync } = require('child_process');
-const vm = require('vm');
+
+function evaluateExpression(expr) {
+    let index = 0;
+
+    function peek() {
+        return expr[index] || '';
+    }
+
+    function consume() {
+        return expr[index++] || '';
+    }
+
+    function skipWhitespace() {
+        while (/\s/.test(peek())) {
+            consume();
+        }
+    }
+
+    function parseHexNumber() {
+        let value = 0n;
+        let sawDigit = false;
+        while (/[0-9a-fA-F]/.test(peek())) {
+            sawDigit = true;
+            const ch = consume();
+            const digit = parseInt(ch, 16);
+            value = value * 16n + BigInt(digit);
+        }
+        if (!sawDigit) {
+            throw new Error('Expected hex digit at position ' + index + ' in expression: ' + expr);
+        }
+        return value;
+    }
+
+    function parsePrimary() {
+        skipWhitespace();
+        const ch = peek();
+        if (ch === '(') {
+            consume(); // '('
+            const value = parseComparison();
+            skipWhitespace();
+            if (consume() !== ')') {
+                throw new Error('Expected ) at position ' + index + ' in expression: ' + expr);
+            }
+            return value;
+        }
+        return parseHexNumber();
+    }
+
+    function parseUnary() {
+        skipWhitespace();
+        let sign = 1n;
+        while (peek() === '+' || peek() === '-') {
+            const op = consume();
+            if (op === '-') {
+                sign = -sign;
+            }
+            skipWhitespace();
+        }
+        const value = parsePrimary();
+        return sign === 1n ? value : -value;
+    }
+
+    function parseMulDiv() {
+        let left = parseUnary();
+        while (true) {
+            skipWhitespace();
+            const op = peek();
+            if (op !== '*' && op !== '/') {
+                break;
+            }
+            consume();
+            const right = parseUnary();
+            if (op === '*') {
+                left = left * right;
+            } else {
+                if (right === 0n) {
+                    throw new Error('Division by zero in expression: ' + expr);
+                }
+                left = left / right;
+            }
+        }
+        return left;
+    }
+
+    function parseAddSub() {
+        let left = parseMulDiv();
+        while (true) {
+            skipWhitespace();
+            const op = peek();
+            if (op !== '+' && op !== '-') {
+                break;
+            }
+            consume();
+            const right = parseMulDiv();
+            if (op === '+') {
+                left = left + right;
+            } else {
+                left = left - right;
+            }
+        }
+        return left;
+    }
+
+    function parseComparison() {
+        let left = parseAddSub();
+        while (true) {
+            skipWhitespace();
+            const op = peek();
+            if (op !== '<' && op !== '>') {
+                break;
+            }
+            consume();
+            const right = parseAddSub();
+            if (op === '<') {
+                left = left < right ? 1n : 0n;
+            } else {
+                left = left > right ? 1n : 0n;
+            }
+        }
+        return left;
+    }
+
+    const result = parseComparison();
+    skipWhitespace();
+    if (index < expr.length) {
+        throw new Error('Unexpected characters at position ' + index + ' in expression: ' + expr);
+    }
+    return result;
+}
 
 async function main() {
     const compiledPath = path.join(os.tmpdir(), 'compiled.fif');
@@ -49,10 +177,11 @@ async function main() {
                 //  - collapse '//' into '/' to avoid accidental integer-division notation,
                 //  - append 'n' to hexadecimal digits that are followed by a non-hex/non-'x'
                 //    character or end-of-string so they are treated as BigInt literals.
-                // The resulting expression string is then evaluated with vm.runInNewContext() below.
+                // The resulting expression string is then evaluated using a dedicated
+                // arithmetic expression evaluator instead of vm.runInNewContext().
                 const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replaceAll('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
 
-                processedInputs.push(vm.runInNewContext(replacedInput, {}, { timeout: 1000 }).toString());
+                processedInputs.push(evaluateExpression(replacedInput).toString());
             }
 
             testCases.push([parts[1], processedInputs.join(' '), parts[3]]);
