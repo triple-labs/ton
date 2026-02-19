@@ -88,7 +88,9 @@ def compile_func(f):
             COMPILED_ST_FIF = os.path.join(TMP_DIR, "storage-contract.fif")
             COMPILED_ST_BOC = os.path.join(TMP_DIR, "storage-contract-code.boc")
             COMPILED_BUILD_BOC = os.path.join(TMP_DIR, "build-boc.fif")
-            subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_ST_FIF, "-SPA", f.replace("storage-provider.fc","storage-contract.fc")], capture_output=False, timeout=10)
+            res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_ST_FIF, "-SPA", f.replace("storage-provider.fc","storage-contract.fc")], capture_output=True, timeout=10)
+            if res.returncode != 0:
+                raise ExecutionError(str(res.stderr, "utf-8"))
             with open(COMPILED_BUILD_BOC, "w") as scr:
                 scr.write("\"%s\" include boc>B \"%s\" B>file "%(COMPILED_ST_FIF, COMPILED_ST_BOC))
             res = subprocess.run([FIFT_EXECUTABLE, COMPILED_BUILD_BOC ], capture_output=True, timeout=10)
