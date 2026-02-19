@@ -94,6 +94,8 @@ def compile_func(f):
             with open(COMPILED_BUILD_BOC, "w") as scr:
                 scr.write("\"%s\" include boc>B \"%s\" B>file "%(COMPILED_ST_FIF, COMPILED_ST_BOC))
             res = subprocess.run([FIFT_EXECUTABLE, COMPILED_BUILD_BOC ], capture_output=True, timeout=10)
+            if res.returncode != 0:
+                raise ExecutionError(str(res.stderr, "utf-8"))
 
 
         res = subprocess.run([FUNC_EXECUTABLE, "-o", COMPILED_FIF, "-SPA", f], capture_output=True, timeout=10)
