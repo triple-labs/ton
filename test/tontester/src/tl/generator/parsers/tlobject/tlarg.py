@@ -67,8 +67,6 @@ class TLArg:
             # help.configSpecial
             if self.type.split(".")[-1][0].islower():
                 self.skip_constructor_id = True
-        # if self.type in ('Int128' or 'Int256'):
-        #     self.type = 'bytes'
 
         self.generic_definition: bool = generic_definition
 
