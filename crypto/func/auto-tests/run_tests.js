@@ -1,5 +1,5 @@
 const fs = require('fs/promises');
-const fss = require('fs');
+const fsSync = require('fs');
 const os = require('os');
 const path = require('path');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
@@ -135,7 +135,7 @@ function evaluateExpression(expr) {
 }
 
 async function main() {
-    const tmpDir = fss.mkdtempSync(path.join(os.tmpdir(), 'run-tests-'));
+    const tmpDir = fsSync.mkdtempSync(path.join(os.tmpdir(), 'run-tests-'));
     const compiledPath = path.join(tmpDir, 'compiled.fif');
     const runnerPath = path.join(tmpDir, 'runner.fif');
 
