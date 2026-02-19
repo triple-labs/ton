@@ -49,7 +49,7 @@ async function main() {
                 //  - collapse '//' into '/' to avoid accidental integer-division notation,
                 //  - append 'n' to hexadecimal digits that are followed by a non-hex/non-'x'
                 //    character or end-of-string so they are treated as BigInt literals.
-                // The resulting expression string is then evaluated with eval() below.
+                // The resulting expression string is then evaluated with vm.runInNewContext() below.
                 const replacedInput = input.split('').filter(c => mathChars.includes(c)).join('').replace('//', '/').replace(/([0-9a-f])($|[^0-9a-fx])/gmi, '$1n$2')
 
                 processedInputs.push(vm.runInNewContext(replacedInput, {}).toString());
