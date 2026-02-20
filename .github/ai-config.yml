@@ -1,0 +1,197 @@
+# AI Configuration Reference
+# This file specifies which private AI configuration repository to use
+# and which agents are enabled for the TON blockchain project.
+
+# Reference to the private AI configuration repository
+ai_config_repository:
+  owner: "triple-labs"
+  repo: "ton-ai-config"
+  branch: "main"
+  # The repository is accessed via the AI_CONFIG_REPO_TOKEN secret
+
+# Agent configurations
+# Each agent can be enabled/disabled and configured here
+agents:
+  # Code review agent for automated PR reviews
+  code_review:
+    enabled: true
+    config_path: "agents/code-review/config.yml"
+    prompt_path: "agents/code-review/prompts/security-review.md"
+    description: "Automated security and quality code reviews"
+    triggers:
+      - pull_request
+    filters:
+      allowed_users:
+        - "EmelyanenkoK"
+        - "tolya-yanot"
+        - "SpyCheese"
+        - "neodix42"
+        - "dungeon-master-666"
+        - "igroman787"
+        - "kdimentionaltree"
+        - "sonofmom"
+        - "Trinketer22"
+        - "xssnick"
+        - "tolk-vm"
+        - "DanShaders"
+        - "birydrad"
+        - "abacabadabacaba"
+        - "Mustang98"
+        - "avevad"
+        - "tvorogme"
+        - "krigga"
+
+  # Documentation generation agent (disabled by default)
+  documentation:
+    enabled: false
+    config_path: "agents/documentation/config.yml"
+    prompt_path: "agents/documentation/prompts/generate-docs.md"
+    description: "Automated documentation generation and updates"
+    triggers:
+      - push
+    filters:
+      paths:
+        - "crypto/**/*.cpp"
+        - "crypto/**/*.h"
+
+  # Code generation agent (disabled by default)
+  code_generation:
+    enabled: false
+    config_path: "agents/code-generation/config.yml"
+    prompt_path: "agents/code-generation/prompts/templates/"
+    description: "Automated code scaffolding and generation"
+
+  # Test generation agent (disabled by default)
+  test_generation:
+    enabled: false
+    config_path: "agents/test-generation/config.yml"
+    description: "Automated test case generation"
+
+# Global AI settings
+settings:
+  # Enable/disable all AI features
+  ai_enabled: true
+  
+  # Require human approval before posting AI-generated comments
+  require_approval: true
+  
+  # Maximum number of AI-generated comments per PR
+  max_comments_per_pr: 10
+  
+  # AI model configuration (can be overridden per agent)
+  default_model:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.3
+    max_tokens: 2000
+  
+  # Rate limiting
+  rate_limit:
+    max_requests_per_hour: 60
+    max_requests_per_day: 500
+  
+  # Logging and monitoring
+  logging:
+    enabled: true
+    level: "info"
+    include_prompts: false  # Don't log prompts for security
+  
+  # Auto-retry configuration
+  retry:
+    enabled: true
+    max_attempts: 3
+    backoff_seconds: 5
+
+# Feature flags for gradual rollout
+feature_flags:
+  # Advanced security scanning
+  advanced_security_scan: false
+  
+  # Automatic vulnerability detection
+  auto_vuln_detection: false
+  
+  # AI-powered merge conflict resolution
+  auto_merge_resolution: false
+  
+  # Intelligent code suggestions
+  code_suggestions: true
+  
+  # Performance analysis
+  performance_analysis: false
+
+# Notification settings
+notifications:
+  # Notify on AI errors
+  on_error: true
+  
+  # Notify on AI warnings
+  on_warning: false
+  
+  # Channels for notifications
+  channels:
+    - type: "github_comment"
+      enabled: true
+    - type: "slack"
+      enabled: false
+      webhook_secret: "SLACK_WEBHOOK_URL"
+
+# Cost tracking and limits
+cost_tracking:
+  enabled: true
+  monthly_budget_usd: 1000
+  alert_threshold_percent: 80
+  alert_recipients:
+    - "ai-team@ton.org"
+
+# Audit and compliance
+audit:
+  # Log all AI interactions
+  enabled: true
+  
+  # Retention period for logs (days)
+  retention_days: 90
+  
+  # Include in security audits
+  security_audits: true
+
+# Integration settings
+integrations:
+  # CodeQL integration
+  codeql:
+    enabled: true
+    combine_results: true
+  
+  # Dependabot integration
+  dependabot:
+    enabled: true
+    auto_review: true
+  
+  # External tools
+  external_tools:
+    enabled: false
+    allowed_tools: []
+
+# Privacy and data handling
+privacy:
+  # Do not send private repository code to external services
+  # unless explicitly configured
+  respect_repository_privacy: true
+  
+  # Anonymize user data in logs
+  anonymize_users: true
+  
+  # Data retention
+  data_retention_days: 30
+  
+  # GDPR compliance
+  gdpr_compliant: true
+
+# Emergency controls
+emergency:
+  # Kill switch to disable all AI features
+  enabled: true
+  
+  # Contacts for emergency shutdown
+  contacts:
+    - "security@ton.org"
+    - "ai-lead@ton.org"
