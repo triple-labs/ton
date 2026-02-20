@@ -202,32 +202,57 @@ async function main() {
         let fiftExecutable = 'fift';
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
-            const candidateBasename = path.basename(candidate);
-            const isAllowedBare =
-                candidate === 'fift' ||
-                candidate === 'fift.exe';
-            const isAllowedAbsolute =
-                path.isAbsolute(candidate) &&
-                (candidateBasename === 'fift' || candidateBasename === 'fift.exe');
-
-            if (isAllowedBare) {
-                // Use the bare program name; rely on PATH for resolution.
+            const allowedBasenames = new Set(['fift', 'fift.exe']);
+            
+            // Allow bare program names 'fift' or 'fift.exe' (rely on PATH)
+            if (allowedBasenames.has(candidate)) {
                 fiftExecutable = candidate;
-            } else if (isAllowedAbsolute) {
-                // Only allow absolute paths that point to an existing regular file.
-                try {
-                    const stat = fsSync.statSync(candidate);
-                    if (!stat.isFile()) {
-                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a regular file`);
-                    }
-                } catch (e) {
-                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot stat file: ${e.message}`);
+            } else if (path.isAbsolute(candidate)) {
+                // For absolute paths: normalize, resolve symlinks, and validate
+                const normalized = path.normalize(candidate);
+                
+                // Reject paths with directory traversal sequences
+                if (normalized !== candidate) {
+                    throw new Error(
+                        `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                        `normalized path differs (possible traversal attempt)`
+                    );
                 }
-                fiftExecutable = candidate;
+                
+                try {
+                    // Resolve symlinks to get the real path
+                    const resolved = fsSync.realpathSync(normalized);
+                    const resolvedBasename = path.basename(resolved);
+                    
+                    // Verify the resolved path points to 'fift' or 'fift.exe'
+                    if (!allowedBasenames.has(resolvedBasename)) {
+                        throw new Error(
+                            `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                            `resolved to "${resolved}" which does not end in "fift" or "fift.exe"`
+                        );
+                    }
+                    
+                    // Verify it's a regular file
+                    const stat = fsSync.statSync(resolved);
+                    if (!stat.isFile()) {
+                        throw new Error(
+                            `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                            `resolved path is not a regular file`
+                        );
+                    }
+                    
+                    // Use the resolved path to avoid surprises
+                    fiftExecutable = resolved;
+                } catch (e) {
+                    throw new Error(
+                        `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                        `${e.message}`
+                    );
+                }
             } else {
                 throw new Error(
-                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift", ` +
-                    `"fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
+                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                    `only "fift", "fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
                 );
             }
         }
