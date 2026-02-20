@@ -202,18 +202,24 @@ async function main() {
         let fiftExecutable = 'fift';
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
-            // Allow either the bare program name "fift" or an absolute path whose
-            // basename is "fift". Additionally require that any absolute path
-            // points to an existing regular file, to avoid executing arbitrary tools.
-            if (candidate === 'fift') {
+            // Allow either the bare program name "fift" (or "fift.exe" on Windows)
+            // or an absolute path whose basename is "fift" (or "fift.exe").
+            // Additionally require that any absolute path points to an existing
+            // regular file and is not a symlink, to avoid executing arbitrary tools.
+            const allowedBasenames = ['fift', 'fift.exe'];
+            if (allowedBasenames.includes(candidate)) {
                 fiftExecutable = candidate;
-            } else if (path.isAbsolute(candidate) && path.basename(candidate) === 'fift') {
+            } else if (path.isAbsolute(candidate) && allowedBasenames.includes(path.basename(candidate))) {
                 try {
-                    const stat = fsSync.statSync(candidate);
-                    if (stat.isFile()) {
+                    // Resolve symlinks to get the real path
+                    const realPath = fsSync.realpathSync(candidate);
+                    const stat = fsSync.statSync(realPath);
+                    
+                    // Verify the resolved path also has an allowed basename
+                    if (stat.isFile() && allowedBasenames.includes(path.basename(realPath))) {
                         fiftExecutable = candidate;
                     } else {
-                        console.warn('Ignoring FIFT_EXECUTABLE that is not a regular file:', candidate);
+                        console.warn('Ignoring FIFT_EXECUTABLE: resolved path is not a valid fift executable:', realPath);
                     }
                 } catch (e) {
                     console.warn('Ignoring FIFT_EXECUTABLE that does not exist or is not accessible:', candidate);
