@@ -211,14 +211,11 @@ async function main() {
                 try {
                     const stat = fsSync.statSync(candidate);
                     if (stat.isFile()) {
-                        fiftExecutable = candidate;
-                    } else {
-                        console.warn('Ignoring FIFT_EXECUTABLE that is not a regular file:', candidate);
-                    }
-                } catch (e) {
-                    console.warn('Ignoring FIFT_EXECUTABLE that does not exist or is not accessible:', candidate);
-                }
-            } else {
+            // Allow an absolute path whose basename is "fift". This prevents executing arbitrary tools.
+            const candidateBasename = path.basename(candidate);
+            if (candidateBasename === 'fift' && path.isAbsolute(candidate)) {
+                fiftExecutable = candidate;
+            } else if (candidate !== 'fift') {
                 console.warn('Ignoring unsafe FIFT_EXECUTABLE value:', candidate);
             }
         }
