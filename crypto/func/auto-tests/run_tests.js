@@ -211,7 +211,8 @@ async function main() {
                 // For absolute paths: check for traversal, resolve symlinks, and validate
                 
                 // Reject paths with directory traversal sequences
-                const pathSegments = candidate.split(path.sep);
+                // Split by both / and \ to handle Windows paths with mixed separators
+                const pathSegments = candidate.split(/[/\\]/);
                 if (pathSegments.includes('..') || pathSegments.includes('.')) {
                     throw new Error(
                         `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
