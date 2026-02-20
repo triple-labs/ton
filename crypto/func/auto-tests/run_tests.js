@@ -1,6 +1,7 @@
 const fs = require('fs/promises');
 const os = require('os');
 const path = require('path');
+const fsSync = require('fs');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
 const { execFileSync } = require('child_process');
 
@@ -202,12 +203,21 @@ async function main() {
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
             // Allow either the bare program name "fift" or an absolute path whose
-            // basename is "fift". This prevents executing arbitrary tools.
-            const candidateBasename = path.basename(candidate);
-            if (candidateBasename === 'fift' && path.isAbsolute(candidate)) {
+            // basename is "fift". Additionally require that any absolute path
+            // points to an existing regular file, to avoid executing arbitrary tools.
+            if (candidate === 'fift') {
                 fiftExecutable = candidate;
-            } else if (candidate === 'fift') {
-                fiftExecutable = candidate;
+            } else if (path.isAbsolute(candidate) && path.basename(candidate) === 'fift') {
+                try {
+                    const stat = fsSync.statSync(candidate);
+                    if (stat.isFile()) {
+                        fiftExecutable = candidate;
+                    } else {
+                        console.warn('Ignoring FIFT_EXECUTABLE that is not a regular file:', candidate);
+                    }
+                } catch (e) {
+                    console.warn('Ignoring FIFT_EXECUTABLE that does not exist or is not accessible:', candidate);
+                }
             } else {
                 console.warn('Ignoring unsafe FIFT_EXECUTABLE value:', candidate);
             }
