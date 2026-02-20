@@ -202,21 +202,33 @@ async function main() {
         let fiftExecutable = 'fift';
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
-            // Allow either the bare program name "fift" or an absolute path whose
-            // basename is "fift". Additionally require that any absolute path
-            // points to an existing regular file, to avoid executing arbitrary tools.
-            if (candidate === 'fift') {
+            const candidateBasename = path.basename(candidate);
+            const isAllowedBare =
+                candidate === 'fift' ||
+                candidate === 'fift.exe';
+            const isAllowedAbsolute =
+                path.isAbsolute(candidate) &&
+                (candidateBasename === 'fift' || candidateBasename === 'fift.exe');
+
+            if (isAllowedBare) {
+                // Use the bare program name; rely on PATH for resolution.
                 fiftExecutable = candidate;
-            } else if (path.isAbsolute(candidate) && path.basename(candidate) === 'fift') {
+            } else if (isAllowedAbsolute) {
+                // Only allow absolute paths that point to an existing regular file.
                 try {
                     const stat = fsSync.statSync(candidate);
-                    if (stat.isFile()) {
-            // Allow an absolute path whose basename is "fift". This prevents executing arbitrary tools.
-            const candidateBasename = path.basename(candidate);
-            if (candidateBasename === 'fift' && path.isAbsolute(candidate)) {
+                    if (!stat.isFile()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a regular file`);
+                    }
+                } catch (e) {
+                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot stat file: ${e.message}`);
+                }
                 fiftExecutable = candidate;
-            } else if (candidate !== 'fift') {
-                throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift" or an absolute path ending in "fift" is allowed`);
+            } else {
+                throw new Error(
+                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift", ` +
+                    `"fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
+                );
             }
         }
         const fiftResult = execFileSync(fiftExecutable, fiftArgs, {
