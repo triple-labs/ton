@@ -244,9 +244,13 @@ async function main() {
                     // Use the resolved path to avoid surprises
                     fiftExecutable = resolved;
                 } catch (e) {
+                    // Re-throw Error instances as-is; wrap other errors
+                    if (e instanceof Error && e.message.includes('rejected')) {
+                        throw e;
+                    }
                     throw new Error(
                         `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
-                        `${e.message}`
+                        `error accessing path: ${e.message}`
                     );
                 }
             } else {
