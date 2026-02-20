@@ -215,15 +215,26 @@ async function main() {
                 fiftExecutable = candidate;
             } else if (isAllowedAbsolute) {
                 // Only allow absolute paths that point to an existing regular file.
+                const resolved = path.resolve(candidate);
+                const resolvedBasename = path.basename(resolved);
+                if (
+                    !path.isAbsolute(resolved) ||
+                    (resolvedBasename !== 'fift' && resolvedBasename !== 'fift.exe')
+                ) {
+                    throw new Error(
+                        `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only absolute paths ` +
+                        `ending in "fift" or "fift.exe" are allowed`
+                    );
+                }
                 try {
-                    const stat = fsSync.statSync(candidate);
+                    const stat = fsSync.statSync(resolved);
                     if (!stat.isFile()) {
                         throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a regular file`);
                     }
                 } catch (e) {
                     throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot stat file: ${e.message}`);
                 }
-                fiftExecutable = candidate;
+                fiftExecutable = resolved;
             } else {
                 throw new Error(
                     `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift", ` +
