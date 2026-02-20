@@ -216,7 +216,7 @@ async function main() {
             if (candidateBasename === 'fift' && path.isAbsolute(candidate)) {
                 fiftExecutable = candidate;
             } else if (candidate !== 'fift') {
-                console.warn('Ignoring unsafe FIFT_EXECUTABLE value:', candidate);
+                throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift" or an absolute path ending in "fift" is allowed`);
             }
         }
         const fiftResult = execFileSync(fiftExecutable, fiftArgs, {
