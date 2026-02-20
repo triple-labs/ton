@@ -208,20 +208,20 @@ async function main() {
             if (allowedBasenames.has(candidate)) {
                 fiftExecutable = candidate;
             } else if (path.isAbsolute(candidate)) {
-                // For absolute paths: normalize, resolve symlinks, and validate
-                const normalized = path.normalize(candidate);
+                // For absolute paths: check for traversal, resolve symlinks, and validate
                 
                 // Reject paths with directory traversal sequences
-                if (normalized !== candidate) {
+                const pathSegments = candidate.split(path.sep);
+                if (pathSegments.includes('..') || pathSegments.includes('.')) {
                     throw new Error(
                         `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
-                        `normalized path differs (possible traversal attempt)`
+                        `path contains directory traversal sequences`
                     );
                 }
                 
                 try {
                     // Resolve symlinks to get the real path
-                    const resolved = fsSync.realpathSync(normalized);
+                    const resolved = fsSync.realpathSync(candidate);
                     const resolvedBasename = path.basename(resolved);
                     
                     // Verify the resolved path points to 'fift' or 'fift.exe'
