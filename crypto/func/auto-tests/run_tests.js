@@ -216,7 +216,6 @@ async function main() {
                     const realPath = fsSync.realpathSync(candidate);
                     // Verify it's a regular file (not a directory or special file)
                     const stat = fsSync.statSync(realPath);
-                    
                     // Verify the resolved path also has an allowed basename
                     if (stat.isFile() && allowedBasenames.includes(path.basename(realPath))) {
                         fiftExecutable = candidate;
