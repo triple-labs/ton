@@ -202,17 +202,38 @@ async function main() {
         let fiftExecutable = 'fift';
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
-            const candidateBasename = path.basename(candidate);
-            const isAllowedBare =
-                candidate === 'fift' ||
-                candidate === 'fift.exe';
-            const isAllowedAbsolute =
-                path.isAbsolute(candidate) &&
-                (candidateBasename === 'fift' || candidateBasename === 'fift.exe');
-
-            if (isAllowedBare) {
-                // Use the bare program name; rely on PATH for resolution.
+            const allowedBasenames = new Set(['fift', 'fift.exe']);
+            
+            // Allow bare program names 'fift' or 'fift.exe' (rely on PATH)
+            if (allowedBasenames.has(candidate)) {
                 fiftExecutable = candidate;
+            } else if (path.isAbsolute(candidate)) {
+                // For absolute paths: check for traversal, resolve symlinks, and validate
+                
+                // Reject paths with directory traversal sequences
+                // Split by both / and \ to handle Windows paths with mixed separators
+                const pathSegments = candidate.split(/[/\\]/);
+                if (pathSegments.includes('..') || pathSegments.includes('.')) {
+                    throw new Error(
+                        `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                        `path contains directory traversal sequences`
+                    );
+                }
+                
+                try {
+                    // Resolve symlinks to get the real path
+                    const resolved = fsSync.realpathSync(candidate);
+                    const resolvedBasename = path.basename(resolved);
+                    
+                    // Verify the resolved path points to 'fift' or 'fift.exe'
+                    if (!allowedBasenames.has(resolvedBasename)) {
+                        throw new Error(
+                            `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                            `resolved to "${resolved}" which does not end in "fift" or "fift.exe"`
+                        );
+                    }
+                    
+                    // Verify it's a regular file
             } else if (isAllowedAbsolute) {
                 // Only allow absolute paths that point to an existing regular file.
                 const resolved = path.resolve(candidate);
@@ -244,16 +265,29 @@ async function main() {
                 try {
                     const stat = fsSync.statSync(resolved);
                     if (!stat.isFile()) {
-                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a regular file`);
+                        throw new Error(
+                            `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                            `resolved path is not a regular file`
+                        );
                     }
+                    
+                    // Use the resolved path to avoid surprises
+                    fiftExecutable = resolved;
                 } catch (e) {
-                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot stat file: ${e.message}`);
+                    // Re-throw Error instances as-is; wrap other errors
+                    if (e instanceof Error && e.message.includes('rejected')) {
+                        throw e;
+                    }
+                    throw new Error(
+                        `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                        `error accessing path: ${e.message}`
+                    );
                 }
                 fiftExecutable = resolved;
             } else {
                 throw new Error(
-                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift", ` +
-                    `"fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
+                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
+                    `only "fift", "fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
                 );
             }
         }
