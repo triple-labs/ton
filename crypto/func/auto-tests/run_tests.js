@@ -234,6 +234,35 @@ async function main() {
                     }
                     
                     // Verify it's a regular file
+            } else if (isAllowedAbsolute) {
+                // Only allow absolute paths that point to an existing regular file.
+                const resolved = path.resolve(candidate);
+                    // Resolve the real path and ensure it is still named "fift" or "fift.exe".
+                    const resolved = fsSync.realpathSync(candidate);
+                    const resolvedBasename = path.basename(resolved);
+                    if (resolvedBasename !== 'fift' && resolvedBasename !== 'fift.exe') {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; resolved path "${resolved}" does not end in "fift" or "fift.exe"`);
+                    }
+
+                    // Reject symbolic links for the override path.
+                    const lstat = fsSync.lstatSync(candidate);
+                    if (!lstat.isFile() || lstat.isSymbolicLink()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a non-symlink regular file`);
+                    }
+
+                    // Finally, ensure the resolved target is a regular file.
+                    const stat = fsSync.statSync(resolved);
+                    if (!stat.isFile()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; resolved path is not a regular file`);
+                    }
+
+                    fiftExecutable = resolved;
+                } catch (e) {
+                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot use file: ${e.message}`);
+                }
+                    );
+                }
+                try {
                     const stat = fsSync.statSync(resolved);
                     if (!stat.isFile()) {
                         throw new Error(
@@ -254,6 +283,7 @@ async function main() {
                         `error accessing path: ${e.message}`
                     );
                 }
+                fiftExecutable = resolved;
             } else {
                 throw new Error(
                     `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; ` +
