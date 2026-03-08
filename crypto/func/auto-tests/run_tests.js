@@ -202,6 +202,25 @@ async function main() {
         let fiftExecutable = 'fift';
         if (process.env.FIFT_EXECUTABLE) {
             const candidate = process.env.FIFT_EXECUTABLE;
+            // Allow either the bare program name "fift" (or "fift.exe" on Windows)
+            // or an absolute path whose basename is "fift" (or "fift.exe").
+            // For absolute paths, resolve symlinks and verify both the symlink and
+            // the target point to a regular file with an allowed basename, preventing
+            // execution of arbitrary tools via malicious symlinks.
+            const allowedBasenames = ['fift', 'fift.exe'];
+            if (allowedBasenames.includes(candidate)) {
+                fiftExecutable = candidate;
+            } else if (path.isAbsolute(candidate) && allowedBasenames.includes(path.basename(candidate))) {
+                try {
+                    // Resolve symlinks to get the real path
+                    const realPath = fsSync.realpathSync(candidate);
+                    // Verify it's a regular file (not a directory or special file)
+                    const stat = fsSync.statSync(realPath);
+                    // Verify the resolved path also has an allowed basename
+                    if (stat.isFile() && allowedBasenames.includes(path.basename(realPath))) {
+                        fiftExecutable = candidate;
+                    } else {
+                        console.warn('Ignoring FIFT_EXECUTABLE: resolved path is not a valid fift executable:', realPath);
             const allowedBasenames = new Set(['fift', 'fift.exe']);
             
             // Allow bare program names 'fift' or 'fift.exe' (rely on PATH)
