@@ -2,6 +2,7 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 const os = require('os');
 const path = require('path');
+const fsSync = require('fs');
 const { compileWasm, compileFile } = require('./wasm_tests_common');
 const { execFileSync } = require('child_process');
 
@@ -199,7 +200,67 @@ async function main() {
             fiftArgs.push('-I', includePath);
         }
         fiftArgs.push(runnerPath);
-        const fiftResult = execFileSync(process.env.FIFT_EXECUTABLE || 'fift', fiftArgs, {
+        // Determine which Fift executable to use. Default to 'fift' and only
+        // honor an override from the environment if it looks safe.
+        let fiftExecutable = 'fift';
+        if (process.env.FIFT_EXECUTABLE) {
+            const candidate = process.env.FIFT_EXECUTABLE;
+            const candidateBasename = path.basename(candidate);
+            const isAllowedBare =
+                candidate === 'fift' ||
+                candidate === 'fift.exe';
+            const isAllowedAbsolute =
+                path.isAbsolute(candidate) &&
+                (candidateBasename === 'fift' || candidateBasename === 'fift.exe');
+
+            if (isAllowedBare) {
+                // Use the bare program name; rely on PATH for resolution.
+                fiftExecutable = candidate;
+            } else if (isAllowedAbsolute) {
+                // Only allow absolute paths that point to an existing regular file.
+                const resolved = path.resolve(candidate);
+                    // Resolve the real path and ensure it is still named "fift" or "fift.exe".
+                    const resolved = fsSync.realpathSync(candidate);
+                    const resolvedBasename = path.basename(resolved);
+                    if (resolvedBasename !== 'fift' && resolvedBasename !== 'fift.exe') {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; resolved path "${resolved}" does not end in "fift" or "fift.exe"`);
+                    }
+
+                    // Reject symbolic links for the override path.
+                    const lstat = fsSync.lstatSync(candidate);
+                    if (!lstat.isFile() || lstat.isSymbolicLink()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a non-symlink regular file`);
+                    }
+
+                    // Finally, ensure the resolved target is a regular file.
+                    const stat = fsSync.statSync(resolved);
+                    if (!stat.isFile()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; resolved path is not a regular file`);
+                    }
+
+                    fiftExecutable = resolved;
+                } catch (e) {
+                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot use file: ${e.message}`);
+                }
+                    );
+                }
+                try {
+                    const stat = fsSync.statSync(resolved);
+                    if (!stat.isFile()) {
+                        throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; path is not a regular file`);
+                    }
+                } catch (e) {
+                    throw new Error(`Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; cannot stat file: ${e.message}`);
+                }
+                fiftExecutable = resolved;
+            } else {
+                throw new Error(
+                    `Unsafe FIFT_EXECUTABLE value "${candidate}" rejected; only "fift", ` +
+                    `"fift.exe", or an absolute path ending in "fift" or "fift.exe" is allowed`
+                );
+            }
+        }
+        const fiftResult = execFileSync(fiftExecutable, fiftArgs, {
             stdio: ['pipe', 'pipe', 'ignore']
         }).toString('utf-8')
 

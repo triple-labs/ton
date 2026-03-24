@@ -67,8 +67,6 @@ class TLArg:
             # help.configSpecial
             if self.type.split(".")[-1][0].islower():
                 self.skip_constructor_id = True
-        # if self.type in ('Int128' or 'Int256'):
-        #     self.type = 'bytes'
 
         self.generic_definition: bool = generic_definition
 
@@ -79,8 +77,6 @@ class TLArg:
         cls = self.type
         # if '.' in cls:
         #     cls = snake_to_camel_case('_'.join(cls.split('.')))
-        result = {
-            "int": "int",
             "long": "int",
             "int64": "int",
             "int32": "int",

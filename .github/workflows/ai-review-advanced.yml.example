@@ -1,0 +1,208 @@
+name: AI Code Review (Advanced with Private Config)
+
+# This workflow demonstrates how to use configurations from a private AI repository
+# It extends the basic codex-review.yml with more advanced features
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  ai-review:
+    # Only run for PRs authored by allowed users (defined in ai-config.yml)
+    if: |
+      github.event.pull_request.draft == false && (
+        github.event.pull_request.user.login == 'EmelyanenkoK' ||
+        github.event.pull_request.user.login == 'tolya-yanot' ||
+        github.event.pull_request.user.login == 'SpyCheese' ||
+        github.event.pull_request.user.login == 'neodix42' ||
+        github.event.pull_request.user.login == 'dungeon-master-666' ||
+        github.event.pull_request.user.login == 'igroman787' ||
+        github.event.pull_request.user.login == 'kdimentionaltree' ||
+        github.event.pull_request.user.login == 'sonofmom' ||
+        github.event.pull_request.user.login == 'Trinketer22' ||
+        github.event.pull_request.user.login == 'xssnick' ||
+        github.event.pull_request.user.login == 'tolk-vm' ||
+        github.event.pull_request.user.login == 'DanShaders' ||
+        github.event.pull_request.user.login == 'birydrad' ||
+        github.event.pull_request.user.login == 'abacabadabacaba' ||
+        github.event.pull_request.user.login == 'Mustang98' ||
+        github.event.pull_request.user.login == 'avevad' ||
+        github.event.pull_request.user.login == 'tvorogme' ||
+        github.event.pull_request.user.login == 'krigga'
+      )
+    
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 0
+      
+      - name: Pre-fetch base and head refs for the PR
+        run: |
+          git fetch --no-tags origin \
+            ${{ github.event.pull_request.base.ref }} \
+            +refs/pull/${{ github.event.pull_request.number }}/head
+      
+      # Checkout the private AI configuration repository
+      # This requires the AI_CONFIG_REPO_TOKEN secret to be set
+      - name: Checkout AI configuration repository
+        uses: actions/checkout@v4
+        with:
+          repository: triple-labs/ton-ai-config
+          token: ${{ secrets.AI_CONFIG_REPO_TOKEN }}
+          path: .ai-config
+          ref: main
+      
+      # Load configuration from the private repository
+      - name: Load AI configuration
+        id: load_config
+        run: |
+          # Check if AI config repository was successfully checked out
+          if [ ! -d ".ai-config" ]; then
+            echo "Warning: AI config repository not found, using defaults"
+            echo "config_loaded=false" >> $GITHUB_OUTPUT
+          else
+            echo "AI config repository loaded successfully"
+            echo "config_loaded=true" >> $GITHUB_OUTPUT
+            
+            # List available configurations
+            echo "Available AI configurations:"
+            find .ai-config -name "*.yml" -o -name "*.md" | head -20
+          fi
+      
+      # Determine which type of review to run based on changed files
+      - name: Analyze changed files
+        id: analyze_changes
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Determine review type based on file types
+          REVIEW_TYPE="general"
+          
+          if echo "$CHANGED_FILES" | grep -q "crypto/.*\\.\\(cpp\\|h\\)$"; then
+            REVIEW_TYPE="security"
+          elif echo "$CHANGED_FILES" | grep -q ".*\\.md$"; then
+            REVIEW_TYPE="documentation"
+          elif echo "$CHANGED_FILES" | grep -q "test/.*\\.\\(cpp\\|py\\)$"; then
+            REVIEW_TYPE="testing"
+          fi
+          
+          echo "Review type: $REVIEW_TYPE"
+          echo "review_type=$REVIEW_TYPE" >> $GITHUB_OUTPUT
+      
+      # Select the appropriate prompt based on the review type
+      - name: Select AI prompt
+        id: select_prompt
+        run: |
+          REVIEW_TYPE="${{ steps.analyze_changes.outputs.review_type }}"
+          
+          # Default prompt
+          PROMPT_FILE=".ai-config/agents/code-review/prompts/security-review.md"
+          
+          # Use specialized prompts if available
+          if [ "$REVIEW_TYPE" = "security" ] && [ -f ".ai-config/agents/code-review/prompts/security-review.md" ]; then
+            PROMPT_FILE=".ai-config/agents/code-review/prompts/security-review.md"
+          elif [ "$REVIEW_TYPE" = "documentation" ] && [ -f ".ai-config/agents/documentation/prompts/doc-review.md" ]; then
+            PROMPT_FILE=".ai-config/agents/documentation/prompts/doc-review.md"
+          fi
+          
+          echo "Using prompt: $PROMPT_FILE"
+          echo "prompt_file=$PROMPT_FILE" >> $GITHUB_OUTPUT
+          
+          # Read and prepare the prompt
+          if [ -f "$PROMPT_FILE" ]; then
+            echo "Prompt loaded successfully"
+            # Store prompt content for use in next step
+            cat "$PROMPT_FILE" > /tmp/ai-prompt.md
+          else
+            echo "Warning: Prompt file not found, using default"
+            cat > /tmp/ai-prompt.md << 'EOF'
+          # Code Review
+          
+          Review the following code changes for:
+          - Security vulnerabilities
+          - Performance issues
+          - Code quality and style
+          - Potential bugs
+          
+          Be concise and specific. Focus only on issues, not on summarizing changes.
+          EOF
+          fi
+      
+      # Run AI-powered code review
+      - name: Run AI Code Review
+        id: run_ai_review
+        uses: openai/codex-action@086169432f1d2ab2f4057540b1754d550f6a1189 # v1.4
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: |
+            $(cat /tmp/ai-prompt.md)
+            
+            ---
+            
+            This is PR #${{ github.event.pull_request.number }} for ${{ github.repository }}.
+            Review type: ${{ steps.analyze_changes.outputs.review_type }}
+            
+            Review ONLY the changes introduced by the PR:
+            git log --oneline ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
+            
+            ${{ github.event.pull_request.user.login == 'DanShaders' && 'Commits are supposed to be atomic, so review them one-by-one. Commit descriptions might contain some helpful context.' || '' }}
+            
+            CI automatically compiles C++ code and builds, lints, and typechecks all Python code, so
+            disregard any issues that will be found by these checks (this includes presumed
+            compilation errors, wrong Python package/Git submodule versions, or issues that will
+            fail the build in any other way). Even though CI runs unit and integration tests, do not
+            disregard issues that will potentially be found by the tests, as this may help PR
+            author with debugging and test coverage is far from perfect.
+            
+            Suggest any improvements, potential bugs, or issues.
+            
+            Be concise and specific in your feedback. Do not summarize changes in any way unless the
+            issue is not localized to a single line/function and adding context will help
+            understanding the issue. If no issues are found, output only "No issues found."
+            
+            Pull request title and body:
+            ----
+            ${{ github.event.pull_request.title }}
+            ${{ github.event.pull_request.body }}
+  
+  post_feedback:
+    runs-on: ubuntu-latest
+    needs: ai-review
+    if: needs.ai-review.outputs.final_message != ''
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Post AI Review Feedback
+        uses: actions/github-script@v7
+        env:
+          AI_FINAL_MESSAGE: ${{ needs.ai-review.outputs.final_message }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const message = process.env.AI_FINAL_MESSAGE;
+            
+            // Add metadata footer
+            const footer = '\n\n---\n*🤖 This review was generated by AI using private configuration repository*';
+            const fullMessage = message + footer;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: fullMessage,
+            });

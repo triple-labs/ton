@@ -37,3 +37,8 @@ test/integration/.network
 
 test/tontester/tests/tl/generated
 test/tontester/src/tontester/tl
+
+# AI configuration (private repo should be used instead)
+.ai-config/
+*.ai-secret.yml
+ai-keys.yml
