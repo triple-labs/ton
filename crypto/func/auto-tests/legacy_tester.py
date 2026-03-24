@@ -51,44 +51,14 @@ def getenv(name, default=None):
         exit(1)
     return default
 
-def validate_executable(env_name, value, default):
-    """
-    Validate the executable obtained from the environment.
-
-    Allowed values:
-      - a simple executable name (no path separators), or
-      - an absolute path to an existing executable file.
-
-    If the provided value is empty or invalid, fall back to the default.
-    """
-    if not value:
-        return default
-
-    # Disallow relative paths with separators to avoid unexpected locations.
-    if os.path.sep in value or (os.path.altsep and os.path.altsep in value):
-        # Allow absolute paths to an existing executable file.
-        if os.path.isabs(value) and os.path.isfile(value) and os.access(value, os.X_OK):
-            return value
-        print(
-            "Invalid value for {0}: {1!r}. Must be a simple executable name or an absolute path to an executable file.".format(
-                env_name, value
-            ),
-            file=sys.stderr,
-        )
-        exit(1)
-
-    # Simple executable name; use as-is.
-    return value
-
-FUNC_EXECUTABLE = validate_executable("FUNC_EXECUTABLE", getenv("FUNC_EXECUTABLE", "func"), "func")
-FIFT_EXECUTABLE = validate_executable("FIFT_EXECUTABLE", getenv("FIFT_EXECUTABLE", "fift"), "fift")
 def _validate_executable_name(name, var_name):
     """
     Ensure the executable name taken from the environment is a simple command
     name without any path separators. This prevents unintended execution of
     arbitrary paths while still allowing selecting alternate binaries on PATH.
     """
-    # Disallow empty names and any path separators.
+    # Normalize whitespace and disallow empty names and any path separators.
+    name = name.strip()
     if not name or os.path.sep in name or (os.path.altsep and os.path.altsep in name):
         raise ValueError(
             "Invalid value for {var}: {val!r}. Expected a simple executable name "
