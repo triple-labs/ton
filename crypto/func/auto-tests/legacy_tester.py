@@ -49,8 +49,22 @@ def getenv(name, default=None):
         exit(1)
     return default
 
-FUNC_EXECUTABLE = getenv("FUNC_EXECUTABLE", "func")
-FIFT_EXECUTABLE = getenv("FIFT_EXECUTABLE", "fift")
+def _validate_executable_name(name, var_name):
+    """
+    Ensure the executable name taken from the environment is a simple command
+    name without any path separators. This prevents unintended execution of
+    arbitrary paths while still allowing selecting alternate binaries on PATH.
+    """
+    # Disallow empty names and any path separators.
+    if not name or os.path.sep in name or (os.path.altsep and os.path.altsep in name):
+        raise ValueError(
+            "Invalid value for {var}: {val!r}. Expected a simple executable name "
+            "without path separators.".format(var=var_name, val=name)
+        )
+    return name
+
+FUNC_EXECUTABLE = _validate_executable_name(getenv("FUNC_EXECUTABLE", "func"), "FUNC_EXECUTABLE")
+FIFT_EXECUTABLE = _validate_executable_name(getenv("FIFT_EXECUTABLE", "fift"), "FIFT_EXECUTABLE")
 TMP_DIR = tempfile.mkdtemp()
 
 COMPILED_FIF = os.path.join(TMP_DIR, "compiled.fif")
