@@ -8,11 +8,10 @@ import tempfile
 def getenv(name, default=None):
     if name in os.environ:
         return os.environ[name]
-    if default is not None:
-        return default
-    print("Environment variable", name, "is not set", file=sys.stderr)
-    exit(1)
-    return None
+    if default is None:
+        print("Environment variable", name, "is not set", file=sys.stderr)
+        exit(1)
+    return default
 
 VAR_CNT = 10
 TMP_DIR = tempfile.mkdtemp()
