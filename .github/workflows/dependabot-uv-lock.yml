@@ -1,3 +1,11 @@
+name: Update uv.lock on Dependabot PRs
+
+# This workflow helps keep uv.lock in sync when Dependabot updates pyproject.toml
+# Since Dependabot's pip ecosystem doesn't update uv.lock automatically, this
+# workflow regenerates the lockfile after Dependabot creates or updates a PR.
+
+on:
+  pull_request_target:
 name: Sync uv.lock on Dependabot PRs
 
 on:
@@ -12,6 +20,12 @@ permissions:
 
 jobs:
   update-uv-lock:
+    # Only run on Dependabot PRs
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout PR
     # Only run for Dependabot PRs from the same repository
     if: |
       github.actor == 'dependabot[bot]' &&
@@ -25,6 +39,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.30"
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -35,6 +53,30 @@ jobs:
           uv lock
       
       - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code uv.lock || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push updated uv.lock
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add uv.lock
+          git commit -m "chore: update uv.lock after Dependabot changes"
+          git push
+      
+      - name: Comment on PR
+        if: steps.git-check.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ `uv.lock` has been automatically updated to match the changes in `pyproject.toml`.'
+            })
         id: check_changes
         run: |
           if git diff --quiet uv.lock; then

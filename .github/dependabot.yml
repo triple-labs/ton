@@ -1,3 +1,14 @@
+# Dependabot configuration for automated dependency updates
+# This helps keep dependencies secure and up-to-date
+# See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Python dependencies
+  # Note: This repository uses uv for Python dependency management (uv.lock).
+  # Dependabot's pip ecosystem will propose updates to pyproject.toml but won't 
+  # update uv.lock automatically. uv.lock updates are automated via the GitHub Action
+  # in .github/workflows/dependabot-uv-lock.yml which runs on Dependabot PRs.
 version: 2
 updates:
   # Python dependencies (via pip ecosystem)
@@ -10,6 +21,9 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
     # Note: Dependabot's pip ecosystem doesn't auto-update uv.lock files.
     # The dependabot-uv-lock.yml workflow automatically regenerates uv.lock
     # when Dependabot updates pyproject.toml, keeping lockfiles in sync.
@@ -20,6 +34,27 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Java/Maven dependencies (for Android examples)
+  - package-ecosystem: "gradle"
+    directory: "/example/android/test"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "android"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -31,6 +66,21 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 2
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+# Configuration notes:
+# - Dependabot will automatically check for security updates
+# - Security updates are prioritized and created immediately
+# - Version updates follow the schedule defined above
+# - PRs are auto-labeled for easy filtering and review
+# - Configure appropriate reviewers and assignees for your team
       day: "monday"
     open-pull-requests-limit: 3
     labels:

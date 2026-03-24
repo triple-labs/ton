@@ -1,0 +1,75 @@
+# Example Custom Properties Configuration for TON Repository
+# This file shows the recommended custom property values for the main TON repository
+# Apply these values through GitHub UI, REST API, or safe-settings
+
+repository:
+  name: ton
+  custom_properties:
+    # Project Classification
+    project_type: blockchain
+    
+    # Critical infrastructure for TON network
+    criticality: critical
+    
+    # Security and compliance requirements
+    compliance:
+      - security-audit
+      - code-review-required
+      - codeql-scanning
+      - dependency-scanning
+      - fuzz-testing
+    
+    # Production-ready codebase
+    lifecycle_stage: production
+    
+    # Supports both mainnet and testnet
+    network_type:
+      - mainnet
+      - testnet
+    
+    # Main components in this monorepo
+    component:
+      - validator-engine
+      - lite-client
+      - tonlib
+      - crypto
+      - func-compiler
+      - tolk-compiler
+      - smart-contracts
+      - dht
+      - adnl
+      - rldp
+      - storage
+      - emulator
+    
+    # Maintained by core team
+    team: core-team
+    
+    # Provides public APIs through tonlib and lite-client
+    public_api: true
+    
+    # Documentation is actively maintained
+    documentation_complete: true
+    
+    # Stable release channel (master branch)
+    release_channel: stable
+
+# Additional metadata (optional, for reference)
+metadata:
+  description: "Main TON monorepo with node/validator, lite-client, tonlib, FunC compiler"
+  languages:
+    - C++
+    - Python
+    - FunC
+    - Tolk
+  platforms:
+    - Linux
+    - macOS
+    - Windows
+    - Android
+    - WebAssembly
+  key_features:
+    - "High-performance blockchain validator"
+    - "Multi-platform support"
+    - "Comprehensive smart contract tooling"
+    - "Production-ready infrastructure"

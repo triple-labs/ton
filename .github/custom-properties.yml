@@ -1,0 +1,136 @@
+# GitHub Organization Custom Properties Configuration
+# This file defines custom properties for the TON blockchain repository
+# These properties help with governance, compliance, and repository management
+
+# Custom Properties for Repository Classification
+custom_properties:
+  # Project type classification
+  project_type:
+    type: single_select
+    description: "Type of project in this repository"
+    allowed_values:
+      - blockchain
+      - validator
+      - smart-contract
+      - tooling
+      - documentation
+      - testing
+    default_value: blockchain
+    required: true
+
+  # Criticality level
+  criticality:
+    type: single_select
+    description: "Impact level of repository on network operations"
+    allowed_values:
+      - critical
+      - high
+      - medium
+      - low
+    default_value: critical
+    required: true
+
+  # Compliance requirements
+  compliance:
+    type: multi_select
+    description: "Compliance and security standards applicable to this repository"
+    allowed_values:
+      - security-audit
+      - code-review-required
+      - codeql-scanning
+      - dependency-scanning
+      - fuzz-testing
+    default_value:
+      - code-review-required
+      - codeql-scanning
+    required: false
+
+  # Development status
+  lifecycle_stage:
+    type: single_select
+    description: "Current lifecycle stage of the project"
+    allowed_values:
+      - production
+      - staging
+      - development
+      - maintenance
+      - deprecated
+    default_value: production
+    required: true
+
+  # Network compatibility
+  network_type:
+    type: multi_select
+    description: "Compatible TON network types"
+    allowed_values:
+      - mainnet
+      - testnet
+      - devnet
+      - local
+    default_value:
+      - mainnet
+      - testnet
+    required: true
+
+  # Component category
+  component:
+    type: multi_select
+    description: "Main components included in this repository"
+    allowed_values:
+      - validator-engine
+      - lite-client
+      - tonlib
+      - crypto
+      - func-compiler
+      - tolk-compiler
+      - smart-contracts
+      - dht
+      - adnl
+      - rldp
+      - storage
+      - emulator
+    default_value:
+      - validator-engine
+      - lite-client
+      - tonlib
+      - crypto
+    required: false
+
+  # Maintenance team
+  team:
+    type: single_select
+    description: "Primary team responsible for maintenance"
+    allowed_values:
+      - core-team
+      - blockchain-team
+      - infrastructure-team
+      - security-team
+      - community
+    default_value: core-team
+    required: false
+
+  # Public API status
+  public_api:
+    type: boolean
+    description: "Whether this repository provides public APIs"
+    default_value: true
+    required: false
+
+  # Documentation status
+  documentation_complete:
+    type: boolean
+    description: "Indicates if documentation is complete and up-to-date"
+    default_value: true
+    required: false
+
+  # Release channel
+  release_channel:
+    type: single_select
+    description: "Release distribution channel"
+    allowed_values:
+      - stable
+      - beta
+      - alpha
+      - nightly
+    default_value: stable
+    required: true
