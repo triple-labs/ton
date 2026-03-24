@@ -326,10 +326,10 @@ class TolkTestFile:
         return s_multiline
 
     def get_compiled_fif_filename(self):
-        return self.artifacts_folder + "/compiled.fif"
+        return os.path.join(self.artifacts_folder, "compiled.fif")
 
     def get_runner_fif_filename(self):
-        return self.artifacts_folder + "/runner.fif"
+        return os.path.join(self.artifacts_folder, "runner.fif")
 
     def run_and_check(self):
         cmd_args = [TOLK_EXECUTABLE, "-o", self.get_compiled_fif_filename()]
@@ -400,7 +400,15 @@ def run_all_tests(tests: List[str]):
         tolk_filename = tests[ti]
         print("Running test %d/%d: %s" % (ti + 1, len(tests), os.path.basename(tolk_filename)), file=sys.stderr)
 
-        artifacts_folder = os.path.join(TMP_DIR, tolk_filename)
+        # Derive a relative name for the artifacts folder based on the test file name
+        # to avoid arbitrary paths escaping TMP_DIR.
+        rel_name = os.path.basename(tolk_filename)
+        artifacts_folder = os.path.normpath(os.path.join(TMP_DIR, rel_name))
+        # Ensure that the artifacts_folder is contained within TMP_DIR.
+        if os.path.commonpath([TMP_DIR, artifacts_folder]) != os.path.abspath(TMP_DIR):
+            print("Refusing to create artifacts outside of TMP_DIR for test:", tolk_filename, file=sys.stderr)
+            exit(1)
+
         testcase = TolkTestFile(tolk_filename, artifacts_folder)
         try:
             if not os.path.exists(artifacts_folder):
@@ -440,7 +448,8 @@ def run_all_tests(tests: List[str]):
         except CompareFifCodegenError as e:
             print("  Mismatch in fif codegen:", e, file=sys.stderr)
             print("  Was compiled to:", testcase.get_compiled_fif_filename(), file=sys.stderr)
-            print(open(testcase.get_compiled_fif_filename()).read(), file=sys.stderr)
+            with open(testcase.get_compiled_fif_filename()) as compiled_fif_file:
+                print(compiled_fif_file.read(), file=sys.stderr)
             exit(2)
         except CompareCodeHashError as e:
             print("  Mismatch in code hash:", e, file=sys.stderr)
