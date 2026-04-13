@@ -12,7 +12,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "basedpyright>=1.32.1",
-    "ruff>=0.14.2",
+    "ruff>=0.15.10",
 ]
 
 [tool.uv.sources]
