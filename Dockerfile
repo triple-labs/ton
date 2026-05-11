@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 RUN rm /var/lib/dpkg/info/libc-bin.* && \
         apt-get clean && \
@@ -30,7 +30,7 @@ RUN mkdir build && \
     generate-random-id dht-server lite-client tolk rldp-http-proxy dht-server proxy-liteserver create-state \
     blockchain-explorer emulator tonlibjson http-proxy adnl-proxy dht-ping-servers dht-resolve" && ninja ${NINJA_TARGETS}
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y wget curl libatomic1 openssl libsodium-dev libmicrohttpd-dev liblz4-dev libjemalloc-dev htop \
